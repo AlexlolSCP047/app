@@ -1,0 +1,65 @@
+// Esquema de base de datos. SQLite en desarrollo; en producción cambia el
+// datasource a PostgreSQL (provider = "postgresql") sin tocar los modelos.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  phone              String? // opcional: solo para recordatorios, no obligatorio en el registro
+  passwordHash       String
+  createdAt          DateTime  @default(now())
+
+  // Prueba gratuita (24 h por defecto, configurable con TRIAL_HOURS)
+  trialEndsAt        DateTime
+
+  // Facturación (Stripe)
+  stripeCustomerId   String?   @unique
+  subscriptionId     String?
+  subscriptionStatus String    @default("trial") // trial | active | past_due | canceled
+  currentPeriodEnd   DateTime?
+
+  profile  TrainingProfile?
+  plans    TrainingPlan[]
+  messages ChatMessage[]
+}
+
+model TrainingProfile {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal        String // p. ej. "perder grasa", "ganar músculo", "resistencia"
+  level       String // principiante | intermedio | avanzado
+  daysPerWeek Int
+  equipment   String // "gimnasio completo", "mancuernas en casa", "sin material"…
+  injuries    String? // lesiones o limitaciones
+  age         Int?
+  weightKg    Float?
+  heightCm    Float?
+  updatedAt   DateTime @updatedAt
+}
+
+model TrainingPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planJson  String // plan semanal completo en JSON generado por la IA
+  createdAt DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String // "user" | "assistant"
+  content   String
+  createdAt DateTime @default(now())
+}
