@@ -37,7 +37,7 @@ apps/
 cd apps/web
 cp .env.example .env        # rellena las claves (ver abajo)
 npm install
-npm run db:push             # crea la base de datos SQLite
+npm run db:push             # crea las tablas en tu base de datos PostgreSQL (Neon)
 npm run dev                 # http://localhost:3000
 ```
 
@@ -45,7 +45,7 @@ npm run dev                 # http://localhost:3000
 
 | Variable | Descripción |
 |---|---|
-| `DATABASE_URL` | `file:./dev.db` en desarrollo; PostgreSQL en producción |
+| `DATABASE_URL` | URL de PostgreSQL (gratis en https://neon.tech); la misma en local y producción |
 | `AUTH_SECRET` | Secreto para las sesiones (`openssl rand -hex 32`) |
 | `APP_URL` | URL pública de la web |
 | `ANTHROPIC_API_KEY` | Clave de la API de Claude ([platform.claude.com](https://platform.claude.com)) |

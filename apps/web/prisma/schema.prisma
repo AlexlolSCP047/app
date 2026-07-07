@@ -1,12 +1,12 @@
-// Esquema de base de datos. SQLite en desarrollo; en producción cambia el
-// datasource a PostgreSQL (provider = "postgresql") sin tocar los modelos.
+// Esquema de base de datos (PostgreSQL — compatible con Neon/Vercel).
+// Usa la misma DATABASE_URL de Neon tanto en local como en producción.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
