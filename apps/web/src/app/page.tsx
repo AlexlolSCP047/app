@@ -75,7 +75,7 @@ export default function LandingPage() {
           <div className="card border-brand-700 text-center">
             <p className="text-sm font-medium uppercase tracking-wide text-brand-400">Plan Pro</p>
             <p className="mt-4 text-5xl font-extrabold">
-              49,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
+              14,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
             </p>
             <p className="mt-2 text-sm text-zinc-400">
               o el equivalente en tu moneda local, calculado al pagar

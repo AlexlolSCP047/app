@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getAccessInfo } from "@/lib/access";
 import { prisma } from "@/lib/db";
-import { anthropic, CLAUDE_MODEL, profileSummaryText, trainerSystemPrompt } from "@/lib/anthropic";
+import { chatChunks, chatOnce, profileSummaryText, trainerSystemPrompt, type AiMessage } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
 
   await prisma.chatMessage.create({ data: { userId: user.id, role: "user", content: message } });
 
-  const conversation = [
+  const conversation: AiMessage[] = [
     ...history.reverse().map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,
@@ -63,46 +63,31 @@ export async function POST(req: Request) {
   const system = trainerSystemPrompt(profile ? profileSummaryText(profile) : null);
 
   if (!wantsStream) {
-    const response = await anthropic().messages.create({
-      model: CLAUDE_MODEL,
-      max_tokens: 8000,
-      thinking: { type: "adaptive" },
-      system,
-      messages: conversation,
-    });
-    if (response.stop_reason === "refusal") {
-      return NextResponse.json({ error: "No puedo ayudarte con esa consulta." }, { status: 502 });
+    let reply: string;
+    try {
+      reply = await chatOnce(system, conversation);
+    } catch {
+      return NextResponse.json(
+        { error: "No se pudo obtener respuesta. Inténtalo de nuevo." },
+        { status: 502 },
+      );
     }
-    const reply = response.content
-      .filter((b) => b.type === "text")
-      .map((b) => (b.type === "text" ? b.text : ""))
-      .join("");
     await prisma.chatMessage.create({ data: { userId: user.id, role: "assistant", content: reply } });
     return NextResponse.json({ reply });
   }
 
   // Streaming: se envía el texto según lo genera el modelo y al final se guarda en BD.
-  const stream = anthropic().messages.stream({
-    model: CLAUDE_MODEL,
-    max_tokens: 8000,
-    thinking: { type: "adaptive" },
-    system,
-    messages: conversation,
-  });
-
   const encoder = new TextEncoder();
   const userId = user.id;
   const readable = new ReadableStream<Uint8Array>({
     async start(controller) {
       let full = "";
       try {
-        for await (const event of stream) {
-          if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-            full += event.delta.text;
-            controller.enqueue(encoder.encode(event.delta.text));
-          }
+        for await (const text of chatChunks(system, conversation)) {
+          full += text;
+          controller.enqueue(encoder.encode(text));
         }
-      } catch (err) {
+      } catch {
         controller.enqueue(encoder.encode("\n[Error al generar la respuesta]"));
       } finally {
         if (full) {

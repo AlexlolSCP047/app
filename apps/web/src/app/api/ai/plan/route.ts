@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getAccessInfo } from "@/lib/access";
 import { prisma } from "@/lib/db";
-import { anthropic, CLAUDE_MODEL, profileSummaryText, trainerSystemPrompt } from "@/lib/anthropic";
+import { generateStructured, profileSummaryText, trainerSystemPrompt } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // la generación del plan puede tardar
 
-// Esquema del plan semanal: salida estructurada garantizada por la API de Claude
+// Esquema del plan semanal: salida estructurada garantizada por la API del modelo
 const planSchema = {
   type: "object",
   properties: {
@@ -82,35 +82,28 @@ export async function POST() {
     );
   }
 
-  const response = await anthropic().messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 16000,
-    thinking: { type: "adaptive" },
-    system: trainerSystemPrompt(profileSummaryText(profile)),
-    output_config: { format: { type: "json_schema", schema: planSchema } },
-    messages: [
-      {
-        role: "user",
-        content:
-          `Diseña mi plan de entrenamiento semanal completo para ${profile.daysPerWeek} días. ` +
-          "Ajusta volumen e intensidad a mi nivel y material disponible, e incluye alternativas si algún ejercicio no es viable.",
-      },
-    ],
-  });
+  // Anclar la lista de días en el prompt garantiza que el modelo genere todos
+  // los elementos del array (los modelos pequeños tienden a quedarse en uno).
+  const dayList = Array.from({ length: profile.daysPerWeek }, (_, i) => `"Día ${i + 1}"`).join(", ");
 
-  if (response.stop_reason === "refusal") {
+  let planData: unknown;
+  try {
+    planData = await generateStructured(
+      trainerSystemPrompt(profileSummaryText(profile)),
+      `Diseña mi plan de entrenamiento semanal completo para ${profile.daysPerWeek} días. ` +
+        `OBLIGATORIO: el array "dias" debe contener exactamente ${profile.daysPerWeek} elementos, ` +
+        `en este orden: ${dayList} (añade el día de la semana sugerido a cada etiqueta). ` +
+        "Cada día debe incluir entre 4 y 7 ejercicios. " +
+        "Ajusta volumen e intensidad a mi nivel y material disponible, e incluye alternativas si algún ejercicio no es viable.",
+      planSchema,
+    );
+  } catch {
     return NextResponse.json(
-      { error: "No se pudo generar el plan. Revisa los datos del perfil e inténtalo de nuevo." },
+      { error: "No se pudo generar el plan. Inténtalo de nuevo en unos segundos." },
       { status: 502 },
     );
   }
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    return NextResponse.json({ error: "Respuesta vacía del modelo." }, { status: 502 });
-  }
-
-  const planData = JSON.parse(textBlock.text);
   const saved = await prisma.trainingPlan.create({
     data: { userId: user.id, planJson: JSON.stringify(planData) },
   });

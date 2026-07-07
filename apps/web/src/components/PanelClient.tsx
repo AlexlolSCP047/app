@@ -207,14 +207,14 @@ export default function PanelClient(props: {
             ⏳ Prueba gratuita: te quedan ~{trialHoursLeft} h
           </span>
           <button onClick={goToCheckout} className="btn-primary" disabled={busy === "checkout"}>
-            {busy === "checkout" ? "Abriendo pago…" : "Suscribirme por 49,99 €/mes"}
+            {busy === "checkout" ? "Abriendo pago…" : "Suscribirme por 14,99 €/mes"}
           </button>
         </div>
       ) : (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-900 bg-red-950/40 px-4 py-3 text-sm">
           <span className="text-red-300">Tu prueba gratuita ha terminado.</span>
           <button onClick={goToCheckout} className="btn-primary" disabled={busy === "checkout"}>
-            {busy === "checkout" ? "Abriendo pago…" : "Suscribirme por 49,99 €/mes"}
+            {busy === "checkout" ? "Abriendo pago…" : "Suscribirme por 14,99 €/mes"}
           </button>
         </div>
       )}

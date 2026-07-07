@@ -72,7 +72,7 @@ export default function HomeScreen({ navigation }: Props) {
             style={styles.subscribeBtn}
             onPress={() => Linking.openURL(`${API_URL}/login`)}
           >
-            <Text style={styles.subscribeBtnText}>Suscribirme (49,99 €/mes) en la web</Text>
+            <Text style={styles.subscribeBtnText}>Suscribirme (14,99 €/mes) en la web</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -82,7 +82,7 @@ export default function HomeScreen({ navigation }: Props) {
             style={styles.subscribeBtn}
             onPress={() => Linking.openURL(`${API_URL}/login`)}
           >
-            <Text style={styles.subscribeBtnText}>Suscribirme (49,99 €/mes) en la web</Text>
+            <Text style={styles.subscribeBtnText}>Suscribirme (14,99 €/mes) en la web</Text>
           </TouchableOpacity>
         </View>
       )}

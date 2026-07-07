@@ -6,7 +6,7 @@ import { stripe } from "@/lib/stripe";
 export const runtime = "nodejs";
 
 /**
- * Crea una sesión de Stripe Checkout para la suscripción mensual (49,99 €).
+ * Crea una sesión de Stripe Checkout para la suscripción mensual (14,99 €).
  * Stripe se encarga de recoger la dirección de facturación y el método de pago,
  * y puede mostrar el precio en la moneda local del cliente (Adaptive Pricing).
  */
