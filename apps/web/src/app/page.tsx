@@ -116,9 +116,20 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-zinc-900 py-8 text-center text-xs text-zinc-500">
-        © {new Date().getFullYear()} FitCoach IA · La información generada no sustituye el consejo
-        médico profesional.
+      <footer className="space-y-2 border-t border-zinc-900 py-8 text-center text-xs text-zinc-500">
+        <p>
+          © {new Date().getFullYear()} FitCoach IA · La información generada no sustituye el consejo
+          médico profesional.
+        </p>
+        <p>
+          <Link href="/privacidad" className="hover:text-zinc-300 hover:underline">
+            Política de privacidad
+          </Link>
+          {" · "}
+          <Link href="/eliminar-cuenta" className="hover:text-zinc-300 hover:underline">
+            Eliminar mi cuenta
+          </Link>
+        </p>
       </footer>
     </main>
   );
