@@ -113,6 +113,7 @@ export default function PanelClient(props: {
   const [chatInput, setChatInput] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [session, setSession] = useState<Plan["dias"][number] | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -368,6 +369,7 @@ export default function PanelClient(props: {
           hasProfile={hasProfile}
           onComplete={completeWorkout}
           onGenerate={generatePlan}
+          onStart={() => nextDay && setSession(nextDay)}
           goPlan={() => setTab("plan")}
           goPerfil={() => setTab("perfil")}
         />
@@ -382,6 +384,7 @@ export default function PanelClient(props: {
           hasFeedback={workouts.length > 0}
           onGenerate={generatePlan}
           onComplete={completeWorkout}
+          onStart={(d) => setSession(d)}
         />
       )}
 
@@ -432,6 +435,19 @@ export default function PanelClient(props: {
       {tab === "perfil" && (
         <ProfileTab profile={profile} setProfile={setProfile} busy={busy} onSave={saveProfile} isNew={!hasProfile} />
       )}
+
+      {/* Modo entrenamiento: sesión guiada a pantalla completa */}
+      {session && (
+        <WorkoutPlayer
+          dia={session}
+          onClose={() => setSession(null)}
+          onFinish={async (difficulty) => {
+            await completeWorkout(session.dia, session.enfoque, difficulty);
+            setSession(null);
+            setTab("hoy");
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -450,6 +466,7 @@ function TodayTab(props: {
   hasProfile: boolean;
   onComplete: (day: string, focus: string, difficulty: string) => void;
   onGenerate: () => void;
+  onStart: () => void;
   goPlan: () => void;
   goPerfil: () => void;
 }) {
@@ -521,8 +538,11 @@ function TodayTab(props: {
               </li>
             ))}
           </ul>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <span className="text-sm text-zinc-400">¿Cómo ha ido?</span>
+          <button onClick={props.onStart} className="btn-primary mt-5 w-full py-3 text-base">
+            ▶ Empezar entrenamiento guiado
+          </button>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-sm text-zinc-400">¿Ya la hiciste por tu cuenta? Marca cómo fue:</span>
             {[
               ["facil", "😎 Fácil"],
               ["justo", "💪 Justo"],
@@ -534,10 +554,10 @@ function TodayTab(props: {
             ))}
             <button
               onClick={() => props.onComplete(props.nextDay!.dia, props.nextDay!.enfoque, difficulty)}
-              className="btn-primary ml-auto"
+              className="btn-secondary ml-auto"
               disabled={props.busy?.startsWith("done-") ?? false}
             >
-              ✓ Completar sesión
+              ✓ Completar
             </button>
           </div>
         </div>
@@ -571,6 +591,7 @@ function PlanTab(props: {
   hasFeedback: boolean;
   onGenerate: () => void;
   onComplete: (day: string, focus: string, difficulty: string) => void;
+  onStart: (dia: Plan["dias"][number]) => void;
 }) {
   return (
     <section className="space-y-6">
@@ -597,7 +618,7 @@ function PlanTab(props: {
             <p className="text-sm text-zinc-300">{props.plan.resumen}</p>
           </div>
           {props.plan.dias.map((dia) => (
-            <DayCard key={dia.dia} dia={dia} done={props.doneLabels.has(dia.dia)} busy={props.busy} onComplete={props.onComplete} />
+            <DayCard key={dia.dia} dia={dia} done={props.doneLabels.has(dia.dia)} busy={props.busy} onComplete={props.onComplete} onStart={props.onStart} />
           ))}
           <div className="card">
             <h2 className="mb-2 font-semibold text-brand-300">Consejos</h2>
@@ -618,6 +639,7 @@ function DayCard(props: {
   done: boolean;
   busy: string | null;
   onComplete: (day: string, focus: string, difficulty: string) => void;
+  onStart: (dia: Plan["dias"][number]) => void;
 }) {
   const [openExercise, setOpenExercise] = useState<string | null>(null);
 
@@ -629,7 +651,10 @@ function DayCard(props: {
           {props.dia.dia} <span className="text-sm font-normal text-brand-400">· {props.dia.enfoque}</span>
         </h3>
         {!props.done && (
-          <div className="flex gap-1">
+          <div className="flex items-center gap-1">
+            <button onClick={() => props.onStart(props.dia)} className="btn-secondary mr-1 px-3 py-1.5 text-xs">
+              ▶ Entrenar
+            </button>
             {[
               ["facil", "😎"],
               ["justo", "💪"],
@@ -1158,5 +1183,180 @@ function ProfileTab(props: {
         {props.busy === "perfil" ? "Guardando…" : props.isNew ? "Guardar y diseñar mi plan 🚀" : "Guardar cambios"}
       </button>
     </form>
+  );
+}
+
+// ---------- Modo entrenamiento (sesión guiada) ----------
+
+function formatSeconds(total: number): string {
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return m > 0 ? `${m}:${s.toString().padStart(2, "0")}` : `${s}`;
+}
+
+function WorkoutPlayer(props: {
+  dia: Plan["dias"][number];
+  onClose: () => void;
+  onFinish: (difficulty: string) => Promise<void>;
+}) {
+  const total = props.dia.ejercicios.length;
+  const [idx, setIdx] = useState(0);
+  const [setsDone, setSetsDone] = useState(0);
+  const [restLeft, setRestLeft] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [difficulty, setDifficulty] = useState("justo");
+  const [saving, setSaving] = useState(false);
+
+  const ej = props.dia.ejercicios[idx];
+
+  // Cuenta atrás del descanso (cadena de timeouts de 1 s)
+  useEffect(() => {
+    if (restLeft <= 0) return;
+    const t = setTimeout(() => setRestLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [restLeft]);
+
+  function goTo(newIdx: number) {
+    setIdx(newIdx);
+    setSetsDone(0);
+    setRestLeft(0);
+  }
+
+  function markSet() {
+    if (setsDone + 1 >= ej.series) {
+      // Última serie del ejercicio → siguiente ejercicio o fin de sesión
+      if (idx + 1 < total) {
+        goTo(idx + 1);
+        setRestLeft(ej.descansoSegundos);
+      } else {
+        setFinished(true);
+      }
+    } else {
+      setSetsDone((s) => s + 1);
+      setRestLeft(ej.descansoSegundos);
+    }
+  }
+
+  async function finish() {
+    setSaving(true);
+    try {
+      await props.onFinish(difficulty);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const progressPct = Math.round(((finished ? total : idx) / total) * 100);
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-zinc-950/95 backdrop-blur-sm">
+      <div className="mx-auto flex min-h-full w-full max-w-lg flex-col px-6 py-8">
+        {/* Cabecera */}
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-brand-400">Entrenando</p>
+            <h2 className="font-bold">
+              {props.dia.dia} <span className="font-normal text-brand-300">· {props.dia.enfoque}</span>
+            </h2>
+          </div>
+          <button onClick={props.onClose} className="btn-secondary px-3 py-1.5 text-xs" title="Salir sin guardar">
+            ✕ Salir
+          </button>
+        </div>
+        <div className="meter mt-4">
+          <span style={{ width: `${progressPct}%` }} />
+        </div>
+        <p className="mt-1 text-right text-xs text-zinc-500">
+          {finished ? total : idx} / {total} ejercicios
+        </p>
+
+        {/* Fin de sesión */}
+        {finished ? (
+          <div className="card mt-6 text-center">
+            <p className="text-4xl">🏆</p>
+            <p className="mt-2 text-lg font-bold">¡Sesión completada!</p>
+            <p className="mt-1 text-sm text-zinc-400">
+              ¿Cómo te ha resultado? La IA lo usará para ajustar tu próximo plan.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {[
+                ["facil", "😎 Fácil"],
+                ["justo", "💪 Justo"],
+                ["dificil", "🥵 Difícil"],
+              ].map(([k, label]) => (
+                <button key={k} onClick={() => setDifficulty(k)} className={`chip ${difficulty === k ? "chip-active" : ""}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button onClick={finish} className="btn-primary mt-6 w-full py-3" disabled={saving}>
+              {saving ? "Guardando…" : "Guardar sesión ✓"}
+            </button>
+            <button onClick={props.onClose} className="mt-3 text-xs text-zinc-500 hover:text-zinc-300">
+              Salir sin guardar
+            </button>
+          </div>
+        ) : restLeft > 0 ? (
+          /* Descanso entre series */
+          <div className="card mt-6 flex flex-1 flex-col items-center justify-center text-center">
+            <p className="text-sm uppercase tracking-wide text-zinc-400">Descanso</p>
+            <p className="mt-4 text-7xl font-extrabold tabular-nums text-brand-400">{formatSeconds(restLeft)}</p>
+            <p className="mt-4 text-sm text-zinc-400">
+              Siguiente: <span className="font-medium text-zinc-200">{ej.nombre}</span>
+              {setsDone > 0 ? ` · serie ${setsDone + 1} de ${ej.series}` : ""}
+            </p>
+            <button onClick={() => setRestLeft(0)} className="btn-secondary mt-6">
+              Saltar descanso →
+            </button>
+          </div>
+        ) : (
+          /* Ejercicio actual */
+          <div className="card mt-6 flex flex-1 flex-col">
+            <p className="text-xs uppercase tracking-wide text-zinc-500">
+              Ejercicio {idx + 1} de {total}
+            </p>
+            <h3 className="mt-1 text-2xl font-bold">{ej.nombre}</h3>
+            <div className="mt-4 flex flex-wrap gap-2 text-sm">
+              <span className="chip cursor-default">🔁 {ej.repeticiones} repeticiones</span>
+              <span className="chip cursor-default">⏱️ {ej.descansoSegundos} s de descanso</span>
+            </div>
+            {ej.notas && <p className="mt-4 text-sm text-zinc-400">💡 {ej.notas}</p>}
+
+            {/* Progreso de series */}
+            <div className="mt-6 flex items-center gap-2">
+              {Array.from({ length: ej.series }, (_, i) => (
+                <span
+                  key={i}
+                  className={`h-3 flex-1 rounded-full ${i < setsDone ? "bg-brand-500" : "bg-zinc-800"}`}
+                />
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-zinc-400">
+              Serie {Math.min(setsDone + 1, ej.series)} de {ej.series}
+            </p>
+
+            <button onClick={markSet} className="btn-primary mt-6 w-full py-4 text-base">
+              ✓ Serie completada
+            </button>
+
+            <div className="mt-4 flex justify-between text-sm">
+              <button
+                onClick={() => idx > 0 && goTo(idx - 1)}
+                className="text-zinc-500 hover:text-zinc-300 disabled:opacity-40"
+                disabled={idx === 0}
+              >
+                ← Anterior
+              </button>
+              <button
+                onClick={() => (idx + 1 < total ? goTo(idx + 1) : setFinished(true))}
+                className="text-zinc-500 hover:text-zinc-300"
+              >
+                Saltar ejercicio →
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
