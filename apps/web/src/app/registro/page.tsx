@@ -100,6 +100,13 @@ export default function RegistroPage() {
           <button className="btn-primary w-full py-3" disabled={loading}>
             {loading ? "Creando cuenta…" : "Crear cuenta y empezar mis 7 días gratis"}
           </button>
+          <p className="text-center text-xs text-zinc-500">
+            Al crear tu cuenta aceptas nuestra{" "}
+            <Link href="/privacidad" className="text-brand-400 hover:underline">
+              política de privacidad
+            </Link>
+            .
+          </p>
         </form>
         <p className="mt-4 text-center text-sm text-zinc-400">
           ¿Ya tienes cuenta?{" "}
