@@ -27,9 +27,11 @@ model User {
   subscriptionStatus String    @default("none") // none | trialing | active | past_due | canceled
   currentPeriodEnd   DateTime?
 
-  profile  TrainingProfile?
-  plans    TrainingPlan[]
-  messages ChatMessage[]
+  profile      TrainingProfile?
+  plans        TrainingPlan[]
+  messages     ChatMessage[]
+  workouts     WorkoutLog[]
+  progress     ProgressEntry[]
 }
 
 model TrainingProfile {
@@ -44,6 +46,10 @@ model TrainingProfile {
   age         Int?
   weightKg    Float?
   heightCm    Float?
+  // Datos del onboarding ampliado
+  sex         String? // hombre | mujer | otro
+  focusAreas  String? // zonas prioritarias, separadas por comas
+  sessionMins Int? // duración objetivo por sesión
   updatedAt   DateTime @updatedAt
 }
 
@@ -62,4 +68,32 @@ model ChatMessage {
   role      String // "user" | "assistant"
   content   String
   createdAt DateTime @default(now())
+}
+
+// Sesión completada: alimenta el calendario, la racha y la IA adaptativa.
+model WorkoutLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayLabel    String // "Día 1 - Lunes"
+  focus       String? // grupo muscular o tipo de sesión
+  difficulty  String // facil | justo | dificil (percepción del esfuerzo)
+  notes       String?
+  completedAt DateTime @default(now())
+
+  @@index([userId, completedAt])
+}
+
+// Registro de progreso (peso corporal o marca en un ejercicio).
+model ProgressEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String // peso_corporal | ejercicio
+  label     String // "Peso corporal" o el nombre del ejercicio
+  value     Float // kg (peso) o carga levantada
+  reps      Int? // repeticiones (solo para ejercicios)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

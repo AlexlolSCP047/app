@@ -2,18 +2,32 @@ import Link from "next/link";
 
 const features = [
   {
-    title: "Plan 100 % personalizado",
-    text: "La IA analiza tu objetivo, nivel, material y lesiones para diseñar tu semana de entrenamiento completa.",
+    icon: "🧠",
+    title: "Plan que se adapta a ti",
+    text: "Marca cada sesión como fácil, justa o difícil y la IA ajusta tu siguiente semana: más carga cuando puedes, más descanso cuando lo necesitas.",
   },
   {
+    icon: "📅",
+    title: "Tu semana, organizada",
+    text: "Ve de un vistazo qué toca hoy, completa sesiones con un toque y mantén tu racha semana tras semana.",
+  },
+  {
+    icon: "📖",
+    title: "Biblioteca de ejercicios",
+    text: "Técnica paso a paso, músculos implicados y errores comunes de cualquier ejercicio. ¿No puedes hacer uno? La IA te da un sustituto al instante.",
+  },
+  {
+    icon: "📈",
+    title: "Progreso visible",
+    text: "Registra tu peso y tus marcas para ver tu evolución en gráficas. Nada motiva más que ver la curva bajar (o la barra subir).",
+  },
+  {
+    icon: "💬",
     title: "Chat con tu entrenador",
-    text: "Resuelve dudas de técnica, sustituye ejercicios o ajusta tu plan hablando con la IA, disponible 24/7.",
+    text: "Resuelve dudas de técnica, nutrición o motivación hablando con la IA, disponible 24/7.",
   },
   {
-    title: "Progresión inteligente",
-    text: "Regenera tu plan cuando avances: series, repeticiones y descansos adaptados a tu evolución.",
-  },
-  {
+    icon: "📱",
     title: "Web + móvil",
     text: "Entrena desde el navegador o desde la app para Android e iOS con la misma cuenta.",
   },
@@ -21,7 +35,7 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen">
+    <main className="app-bg min-h-screen">
       {/* Barra de navegación */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <span className="text-lg font-bold">
@@ -58,9 +72,10 @@ export default function LandingPage() {
 
       {/* Características */}
       <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div key={f.title} className="card">
+              <div className="mb-3 text-2xl">{f.icon}</div>
               <h3 className="mb-2 font-semibold text-brand-300">{f.title}</h3>
               <p className="text-sm text-zinc-400">{f.text}</p>
             </div>
@@ -83,7 +98,8 @@ export default function LandingPage() {
             <ul className="mt-6 space-y-2 text-left text-sm text-zinc-300">
               <li>✓ 7 días de prueba totalmente gratis</li>
               <li>✓ No se cobra nada hasta el día 8</li>
-              <li>✓ Planes semanales ilimitados</li>
+              <li>✓ Planes semanales que se adaptan a tu feedback</li>
+              <li>✓ Biblioteca de ejercicios y gráficas de progreso</li>
               <li>✓ Chat ilimitado con tu entrenador IA</li>
               <li>✓ App para Android e iOS incluida</li>
               <li>✓ Cancela cuando quieras desde tu panel</li>

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getAccessInfo } from "@/lib/access";
 import { prisma } from "@/lib/db";
-import { generateStructured, profileSummaryText, trainerSystemPrompt } from "@/lib/ai";
+import { adaptiveContext, generateStructured, profileSummaryText, trainerSystemPrompt } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // la generación del plan puede tardar
@@ -83,6 +83,14 @@ export async function POST() {
     );
   }
 
+  // Feedback de las últimas sesiones → sobrecarga progresiva adaptada.
+  const recentLogs = await prisma.workoutLog.findMany({
+    where: { userId: user.id },
+    orderBy: { completedAt: "desc" },
+    take: 8,
+  });
+  const adaptive = adaptiveContext(recentLogs);
+
   // Anclar la lista de días en el prompt garantiza que el modelo genere todos
   // los elementos del array (los modelos pequeños tienden a quedarse en uno).
   const dayList = Array.from({ length: profile.daysPerWeek }, (_, i) => `"Día ${i + 1}"`).join(", ");
@@ -95,7 +103,8 @@ export async function POST() {
         `OBLIGATORIO: el array "dias" debe contener exactamente ${profile.daysPerWeek} elementos, ` +
         `en este orden: ${dayList} (añade el día de la semana sugerido a cada etiqueta). ` +
         "Cada día debe incluir entre 4 y 7 ejercicios. " +
-        "Ajusta volumen e intensidad a mi nivel y material disponible, e incluye alternativas si algún ejercicio no es viable.",
+        "Ajusta volumen e intensidad a mi nivel y material disponible, e incluye alternativas si algún ejercicio no es viable." +
+        (adaptive ? `\n\n${adaptive}` : ""),
       planSchema,
     );
   } catch {

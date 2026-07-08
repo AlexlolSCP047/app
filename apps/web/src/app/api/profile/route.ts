@@ -33,6 +33,10 @@ export async function PUT(req: Request) {
     age: Number.isFinite(Number(body?.age)) && Number(body?.age) > 0 ? Number(body.age) : null,
     weightKg: Number.isFinite(Number(body?.weightKg)) && Number(body?.weightKg) > 0 ? Number(body.weightKg) : null,
     heightCm: Number.isFinite(Number(body?.heightCm)) && Number(body?.heightCm) > 0 ? Number(body.heightCm) : null,
+    sex: typeof body?.sex === "string" && body.sex.trim() ? body.sex.trim() : null,
+    focusAreas: typeof body?.focusAreas === "string" && body.focusAreas.trim() ? body.focusAreas.trim() : null,
+    sessionMins:
+      Number.isFinite(Number(body?.sessionMins)) && Number(body?.sessionMins) > 0 ? Number(body.sessionMins) : null,
   };
 
   const profile = await prisma.trainingProfile.upsert({

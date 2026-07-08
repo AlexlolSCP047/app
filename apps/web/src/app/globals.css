@@ -6,12 +6,19 @@ body {
   @apply bg-zinc-950 text-zinc-100 antialiased;
 }
 
+/* Fondo con un leve degradado de marca para dar profundidad */
+.app-bg {
+  background:
+    radial-gradient(60rem 60rem at 80% -10%, rgba(44, 156, 110, 0.12), transparent 60%),
+    radial-gradient(50rem 50rem at -10% 10%, rgba(44, 156, 110, 0.08), transparent 55%);
+}
+
 .input {
-  @apply w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500;
+  @apply w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none transition focus:border-brand-500 focus:ring-1 focus:ring-brand-500;
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
 }
 
 .btn-secondary {
@@ -20,4 +27,28 @@ body {
 
 .card {
   @apply rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6;
+}
+
+/* Chip seleccionable (onboarding, filtros) */
+.chip {
+  @apply cursor-pointer select-none rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:border-zinc-500;
+}
+.chip-active {
+  @apply border-brand-500 bg-brand-500/15 text-brand-200;
+}
+
+/* Pestaña de navegación del panel */
+.tab {
+  @apply rounded-lg px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800/60;
+}
+.tab-active {
+  @apply bg-brand-500 text-white hover:bg-brand-500;
+}
+
+/* Barra de progreso fina */
+.meter {
+  @apply h-2 overflow-hidden rounded-full bg-zinc-800;
+}
+.meter > span {
+  @apply block h-full rounded-full bg-brand-500 transition-all;
 }
