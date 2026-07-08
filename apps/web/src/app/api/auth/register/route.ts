@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  // El acceso se activa al introducir la tarjeta en Stripe (7 días de prueba);
+  // El acceso se activa al introducir la tarjeta en Stripe (1 día de prueba);
   // registrarse solo crea la cuenta.
   const user = await prisma.user.create({
     data: { name, email, phone, passwordHash, trialEndsAt: new Date(), subscriptionStatus: "none" },

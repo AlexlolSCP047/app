@@ -338,9 +338,9 @@ export default function PanelClient(props: {
         </div>
       ) : (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm">
-          <span className="text-amber-300">Activa tus 7 días de prueba gratis — sin cobro hasta el día 8.</span>
+          <span className="text-amber-300">Activa tu día de prueba gratis — sin cobro hasta mañana.</span>
           <button onClick={goToCheckout} className="btn-primary" disabled={busy === "checkout"}>
-            {busy === "checkout" ? "Abriendo…" : "Empezar 7 días gratis"}
+            {busy === "checkout" ? "Abriendo…" : "Empezar mi prueba gratis"}
           </button>
         </div>
       )}

@@ -7,7 +7,7 @@ import Stripe from "stripe";
 const TEST_PRICE_ID = "price_1TqsX7Ixw4PibaK17HIK7Fhc"; // FitCoach IA — Plan Pro, 9,99 EUR/mes
 
 /** Días de prueba gratuita con tarjeta (Stripe no cobra hasta que terminan). */
-export const TRIAL_DAYS = 7;
+export const TRIAL_DAYS = 1;
 
 let client: Stripe | null = null;
 
