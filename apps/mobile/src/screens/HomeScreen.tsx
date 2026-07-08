@@ -50,8 +50,8 @@ export default function HomeScreen({ navigation }: Props) {
     );
   }
 
-  const trialHoursLeft = access
-    ? Math.max(0, Math.ceil((new Date(access.trialEndsAt).getTime() - Date.now()) / 3_600_000))
+  const trialDaysLeft = access?.trialEndsAt
+    ? Math.max(0, Math.ceil((new Date(access.trialEndsAt).getTime() - Date.now()) / 86_400_000))
     : 0;
 
   return (
@@ -64,25 +64,21 @@ export default function HomeScreen({ navigation }: Props) {
           <Text style={{ color: colors.primary }}>✓ Suscripción activa — Plan Pro</Text>
         </View>
       ) : access?.trialActive ? (
+        <View style={[styles.banner, { borderColor: colors.primaryDark }]}>
+          <Text style={{ color: colors.primary }}>
+            🎁 Prueba gratuita: te {trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}. Después, 9,99 €/mes.
+          </Text>
+        </View>
+      ) : (
         <View style={[styles.banner, { borderColor: colors.warning }]}>
           <Text style={{ color: colors.warning }}>
-            ⏳ Prueba gratuita: te quedan ~{trialHoursLeft} h
+            Activa tus 7 días de prueba gratis (9,99 €/mes después).
           </Text>
           <TouchableOpacity
             style={styles.subscribeBtn}
             onPress={() => Linking.openURL(`${API_URL}/login`)}
           >
-            <Text style={styles.subscribeBtnText}>Suscribirme (14,99 €/mes) en la web</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={[styles.banner, { borderColor: colors.danger }]}>
-          <Text style={{ color: colors.danger }}>Tu prueba gratuita ha terminado.</Text>
-          <TouchableOpacity
-            style={styles.subscribeBtn}
-            onPress={() => Linking.openURL(`${API_URL}/login`)}
-          >
-            <Text style={styles.subscribeBtnText}>Suscribirme (14,99 €/mes) en la web</Text>
+            <Text style={styles.subscribeBtnText}>Activar mi prueba en la web</Text>
           </TouchableOpacity>
         </View>
       )}

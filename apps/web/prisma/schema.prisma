@@ -18,13 +18,13 @@ model User {
   passwordHash       String
   createdAt          DateTime  @default(now())
 
-  // Prueba gratuita (24 h por defecto, configurable con TRIAL_HOURS)
+  // Campo heredado (la prueba ahora la gestiona Stripe con trial de 7 días)
   trialEndsAt        DateTime
 
   // Facturación (Stripe)
   stripeCustomerId   String?   @unique
   subscriptionId     String?
-  subscriptionStatus String    @default("trial") // trial | active | past_due | canceled
+  subscriptionStatus String    @default("none") // none | trialing | active | past_due | canceled
   currentPeriodEnd   DateTime?
 
   profile  TrainingProfile?

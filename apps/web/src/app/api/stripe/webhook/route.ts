@@ -5,10 +5,30 @@ import { stripe, stripeWebhookSecret } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
+/** Traduce el estado de la suscripción de Stripe al estado interno de la app. */
+function mapStatus(status: Stripe.Subscription.Status): string {
+  if (status === "trialing") return "trialing";
+  if (status === "active") return "active";
+  if (status === "past_due") return "past_due";
+  return "canceled";
+}
+
+async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
+  const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+  await prisma.user.updateMany({
+    where: { stripeCustomerId: customerId },
+    data: {
+      subscriptionStatus: mapStatus(sub.status),
+      subscriptionId: sub.id,
+      currentPeriodEnd: new Date(sub.current_period_end * 1000),
+    },
+  });
+}
+
 /**
- * Webhook de Stripe: mantiene sincronizado el estado de la suscripción.
- * Eventos configurados: checkout.session.completed,
- * customer.subscription.updated y customer.subscription.deleted.
+ * Webhook de Stripe: mantiene sincronizado el estado de la suscripción
+ * (prueba de 7 días → activa → impago → cancelada). Eventos configurados:
+ * checkout.session.completed, customer.subscription.created/updated/deleted.
  */
 export async function POST(req: Request) {
   const secret = stripeWebhookSecret();
@@ -27,34 +47,18 @@ export async function POST(req: Request) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
-      const customerId = typeof session.customer === "string" ? session.customer : session.customer?.id;
       const subscriptionId =
         typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
-      if (customerId) {
-        await prisma.user.updateMany({
-          where: { stripeCustomerId: customerId },
-          data: { subscriptionStatus: "active", subscriptionId: subscriptionId ?? undefined },
-        });
+      if (subscriptionId) {
+        // Se consulta la suscripción real para saber si está en prueba o activa
+        const sub = await stripe().subscriptions.retrieve(subscriptionId);
+        await syncSubscription(sub);
       }
       break;
     }
+    case "customer.subscription.created":
     case "customer.subscription.updated": {
-      const sub = event.data.object as Stripe.Subscription;
-      const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
-      const status =
-        sub.status === "active" || sub.status === "trialing"
-          ? "active"
-          : sub.status === "past_due"
-            ? "past_due"
-            : "canceled";
-      await prisma.user.updateMany({
-        where: { stripeCustomerId: customerId },
-        data: {
-          subscriptionStatus: status,
-          subscriptionId: sub.id,
-          currentPeriodEnd: new Date(sub.current_period_end * 1000),
-        },
-      });
+      await syncSubscription(event.data.object as Stripe.Subscription);
       break;
     }
     case "customer.subscription.deleted": {

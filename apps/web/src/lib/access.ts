@@ -2,27 +2,29 @@ import type { User } from "@prisma/client";
 
 export type AccessInfo = {
   hasAccess: boolean;
-  status: string; // trial | active | past_due | canceled
-  trialEndsAt: string;
+  // none (registrado sin tarjeta) | trialing (7 días de prueba) | active |
+  // past_due | canceled
+  status: string;
+  trialEndsAt: string | null; // fin de la prueba (solo cuando status = trialing)
   trialActive: boolean;
   currentPeriodEnd: string | null;
 };
 
-/** Un usuario tiene acceso si su suscripción está activa o si sigue dentro de la prueba gratuita. */
+/**
+ * El acceso lo da la suscripción de Stripe: "trialing" (7 días de prueba con
+ * tarjeta ya introducida), "active" (pagando) o "past_due" (pago pendiente de
+ * reintento). Registrarse sin introducir la tarjeta no da acceso.
+ */
 export function getAccessInfo(user: User): AccessInfo {
-  const now = new Date();
-  const trialActive = user.subscriptionStatus === "trial" && user.trialEndsAt > now;
-  const subscribed = user.subscriptionStatus === "active" || user.subscriptionStatus === "past_due";
+  const status = user.subscriptionStatus;
+  const trialActive = status === "trialing";
+  const hasAccess = status === "active" || status === "trialing" || status === "past_due";
+  const periodEnd = user.currentPeriodEnd?.toISOString() ?? null;
   return {
-    hasAccess: subscribed || trialActive,
-    status: user.subscriptionStatus,
-    trialEndsAt: user.trialEndsAt.toISOString(),
+    hasAccess,
+    status,
+    trialEndsAt: trialActive ? periodEnd : null,
     trialActive,
-    currentPeriodEnd: user.currentPeriodEnd?.toISOString() ?? null,
+    currentPeriodEnd: periodEnd,
   };
-}
-
-export function trialHours(): number {
-  const parsed = Number(process.env.TRIAL_HOURS);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
 }

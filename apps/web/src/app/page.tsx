@@ -40,7 +40,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-16 text-center">
         <p className="mb-4 inline-block rounded-full border border-brand-700 bg-brand-950 px-4 py-1 text-xs font-medium text-brand-300">
-          1 día de prueba gratis · sin permanencia · cancela cuando quieras
+          7 días de prueba gratis · sin permanencia · cancela cuando quieras
         </p>
         <h1 className="mx-auto max-w-3xl text-4xl font-extrabold leading-tight sm:text-6xl">
           Tu entrenador personal con <span className="text-brand-400">inteligencia artificial</span>
@@ -75,20 +75,21 @@ export default function LandingPage() {
           <div className="card border-brand-700 text-center">
             <p className="text-sm font-medium uppercase tracking-wide text-brand-400">Plan Pro</p>
             <p className="mt-4 text-5xl font-extrabold">
-              14,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
+              9,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
             </p>
             <p className="mt-2 text-sm text-zinc-400">
               o el equivalente en tu moneda local, calculado al pagar
             </p>
             <ul className="mt-6 space-y-2 text-left text-sm text-zinc-300">
-              <li>✓ 1 día de prueba totalmente gratis</li>
+              <li>✓ 7 días de prueba totalmente gratis</li>
+              <li>✓ No se cobra nada hasta el día 8</li>
               <li>✓ Planes semanales ilimitados</li>
               <li>✓ Chat ilimitado con tu entrenador IA</li>
               <li>✓ App para Android e iOS incluida</li>
               <li>✓ Cancela cuando quieras desde tu panel</li>
             </ul>
             <Link href="/registro" className="btn-primary mt-8 w-full py-3">
-              Probar 1 día gratis
+              Probar 7 días gratis
             </Link>
           </div>
         </div>

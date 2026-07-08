@@ -42,8 +42,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export type Access = {
   hasAccess: boolean;
-  status: string;
-  trialEndsAt: string;
+  status: string; // none | trialing | active | past_due | canceled
+  trialEndsAt: string | null;
   trialActive: boolean;
 };
 
