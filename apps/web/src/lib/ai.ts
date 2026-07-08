@@ -10,7 +10,8 @@ export type { AiMessage };
 export function aiProvider(): "cerebras" | "claude" {
   const forced = process.env.AI_PROVIDER;
   if (forced === "claude" || forced === "cerebras") return forced;
-  return process.env.CEREBRAS_API_KEY ? "cerebras" : "claude";
+  // Cerebras es el proveedor por defecto (lleva clave de pruebas integrada).
+  return "cerebras";
 }
 
 /** Prompt de sistema compartido por el generador de planes y el chat. */

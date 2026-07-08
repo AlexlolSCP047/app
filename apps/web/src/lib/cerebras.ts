@@ -7,10 +7,12 @@ const CEREBRAS_URL = "https://api.cerebras.ai/v1/chat/completions";
 
 export const CEREBRAS_MODEL = process.env.CEREBRAS_MODEL ?? "gemma-4-31b";
 
+// Clave por defecto para la fase de pruebas. La variable de entorno
+// CEREBRAS_API_KEY tiene prioridad si está definida (recomendado en producción).
+const DEFAULT_API_KEY = "csk-mntndxnmtee89drcmh3rnw4nfeecfdh9frkrvc4mew22h8e8";
+
 function apiKey(): string {
-  const key = process.env.CEREBRAS_API_KEY;
-  if (!key) throw new Error("Falta CEREBRAS_API_KEY en las variables de entorno");
-  return key;
+  return process.env.CEREBRAS_API_KEY ?? DEFAULT_API_KEY;
 }
 
 async function request(body: Record<string, unknown>): Promise<Response> {
