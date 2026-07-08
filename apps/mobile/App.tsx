@@ -4,13 +4,16 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
-import { getToken } from "./src/api";
+import { getToken, Plan } from "./src/api";
 import { colors } from "./src/theme";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
 import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import PlanScreen from "./src/screens/PlanScreen";
+import WorkoutScreen from "./src/screens/WorkoutScreen";
+import LibraryScreen from "./src/screens/LibraryScreen";
+import ProgressScreen from "./src/screens/ProgressScreen";
 import ChatScreen from "./src/screens/ChatScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 
@@ -20,6 +23,9 @@ export type RootStackParamList = {
   Register: undefined;
   Home: undefined;
   Plan: undefined;
+  Workout: { dia: Plan["dias"][number] };
+  Library: undefined;
+  Progress: undefined;
   Chat: undefined;
   Profile: undefined;
 };
@@ -69,6 +75,9 @@ export default function App() {
         <Stack.Screen name="Register" component={RegisterScreen} options={{ title: "Crear cuenta" }} />
         <Stack.Screen name="Home" component={HomeScreen} options={{ title: "FitCoach IA", headerBackVisible: false }} />
         <Stack.Screen name="Plan" component={PlanScreen} options={{ title: "Mi plan" }} />
+        <Stack.Screen name="Workout" component={WorkoutScreen} options={{ title: "Entrenando 🔥" }} />
+        <Stack.Screen name="Library" component={LibraryScreen} options={{ title: "Ejercicios" }} />
+        <Stack.Screen name="Progress" component={ProgressScreen} options={{ title: "Mi progreso" }} />
         <Stack.Screen name="Chat" component={ChatScreen} options={{ title: "Chat con la IA" }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: "Mi perfil" }} />
       </Stack.Navigator>
