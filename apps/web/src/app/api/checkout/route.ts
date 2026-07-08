@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { stripe } from "@/lib/stripe";
+import { stripe, stripePriceId } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
@@ -10,15 +10,13 @@ export const runtime = "nodejs";
  * Stripe se encarga de recoger la dirección de facturación y el método de pago,
  * y puede mostrar el precio en la moneda local del cliente (Adaptive Pricing).
  */
-export async function POST() {
+export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "No autenticado." }, { status: 401 });
 
-  const priceId = process.env.STRIPE_PRICE_ID;
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
-  if (!priceId) {
-    return NextResponse.json({ error: "Pagos no configurados (STRIPE_PRICE_ID)." }, { status: 500 });
-  }
+  const priceId = stripePriceId();
+  // URL de retorno tras el pago: APP_URL si está definida; si no, el dominio actual.
+  const appUrl = process.env.APP_URL ?? new URL(req.url).origin;
 
   let customerId = user.stripeCustomerId;
   if (!customerId) {
