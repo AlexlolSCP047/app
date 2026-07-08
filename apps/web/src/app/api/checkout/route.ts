@@ -19,33 +19,46 @@ export async function POST(req: Request) {
   // URL de retorno tras el pago: APP_URL si está definida; si no, el dominio actual.
   const appUrl = process.env.APP_URL ?? new URL(req.url).origin;
 
-  let customerId = user.stripeCustomerId;
-  if (!customerId) {
-    const customer = await stripe().customers.create({
-      email: user.email,
-      name: user.name,
-      phone: user.phone ?? undefined,
+  // Cualquier fallo (p. ej. Stripe sin configurar) debe devolver JSON con un
+  // mensaje claro: nunca un 500 vacío que rompa la interfaz.
+  try {
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe().customers.create({
+        email: user.email,
+        name: user.name,
+        phone: user.phone ?? undefined,
+        metadata: { userId: user.id },
+      });
+      customerId = customer.id;
+      await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
+    }
+
+    // Los 7 días de prueba solo se ofrecen a quien nunca ha tenido suscripción
+    // (evita reactivar la prueba cancelando y volviendo a suscribirse).
+    const firstSubscription = !user.subscriptionId;
+
+    const session = await stripe().checkout.sessions.create({
+      mode: "subscription",
+      customer: customerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      subscription_data: firstSubscription ? { trial_period_days: TRIAL_DAYS } : undefined,
+      billing_address_collection: "required",
+      allow_promotion_codes: true,
+      success_url: `${appUrl}/panel?checkout=success`,
+      cancel_url: `${appUrl}/panel?checkout=cancel`,
       metadata: { userId: user.id },
     });
-    customerId = customer.id;
-    await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
+
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    console.error("Error creando la sesión de pago:", err);
+    return NextResponse.json(
+      {
+        error:
+          "El sistema de pagos no está disponible en este momento. Inténtalo de nuevo en unos minutos.",
+      },
+      { status: 503 },
+    );
   }
-
-  // Los 7 días de prueba solo se ofrecen a quien nunca ha tenido suscripción
-  // (evita reactivar la prueba cancelando y volviendo a suscribirse).
-  const firstSubscription = !user.subscriptionId;
-
-  const session = await stripe().checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [{ price: priceId, quantity: 1 }],
-    subscription_data: firstSubscription ? { trial_period_days: TRIAL_DAYS } : undefined,
-    billing_address_collection: "required",
-    allow_promotion_codes: true,
-    success_url: `${appUrl}/panel?checkout=success`,
-    cancel_url: `${appUrl}/panel?checkout=cancel`,
-    metadata: { userId: user.id },
-  });
-
-  return NextResponse.json({ url: session.url });
 }

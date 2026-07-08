@@ -68,10 +68,11 @@ export async function POST() {
 
   const access = getAccessInfo(user);
   if (!access.hasAccess) {
-    return NextResponse.json(
-      { error: "Tu prueba gratuita ha terminado. Suscríbete para continuar.", code: "PAYWALL" },
-      { status: 402 },
-    );
+    const error =
+      access.status === "none"
+        ? "Activa tus 7 días de prueba gratis para usar la IA (botón del panel)."
+        : "Tu suscripción no está activa. Reactívala para continuar.";
+    return NextResponse.json({ error, code: "PAYWALL" }, { status: 402 });
   }
 
   const profile = await prisma.trainingProfile.findUnique({ where: { userId: user.id } });
