@@ -70,8 +70,10 @@ export default function PanelClient(props: {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const trialMsLeft = new Date(props.access.trialEndsAt).getTime() - Date.now();
-  const trialHoursLeft = Math.max(0, Math.ceil(trialMsLeft / 3_600_000));
+  const trialMsLeft = props.access.trialEndsAt
+    ? new Date(props.access.trialEndsAt).getTime() - Date.now()
+    : 0;
+  const trialDaysLeft = Math.max(0, Math.ceil(trialMsLeft / 86_400_000));
 
   async function saveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -196,25 +198,35 @@ export default function PanelClient(props: {
       {/* Estado de la suscripción */}
       {props.access.status === "active" ? (
         <div className="mb-6 flex items-center justify-between rounded-xl border border-brand-800 bg-brand-950/60 px-4 py-3 text-sm">
-          <span className="text-brand-300">✓ Suscripción activa — Plan Pro</span>
+          <span className="text-brand-300">✓ Suscripción activa — Plan Pro (9,99 €/mes)</span>
           <button onClick={openPortal} className="text-brand-400 hover:underline">
             Gestionar suscripción
           </button>
         </div>
       ) : props.access.trialActive ? (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm">
-          <span className="text-amber-300">
-            ⏳ Prueba gratuita: te quedan ~{trialHoursLeft} h
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-800 bg-brand-950/40 px-4 py-3 text-sm">
+          <span className="text-brand-300">
+            🎁 Prueba gratuita activa: te {trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}.
+            Después, 9,99 €/mes.
           </span>
-          <button onClick={goToCheckout} className="btn-primary" disabled={busy === "checkout"}>
-            {busy === "checkout" ? "Abriendo pago…" : "Suscribirme por 14,99 €/mes"}
+          <button onClick={openPortal} className="text-brand-400 hover:underline">
+            Gestionar o cancelar
+          </button>
+        </div>
+      ) : props.access.status === "past_due" ? (
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm">
+          <span className="text-amber-300">⚠️ Hay un problema con tu último pago.</span>
+          <button onClick={openPortal} className="btn-primary">
+            Actualizar tarjeta
           </button>
         </div>
       ) : (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-900 bg-red-950/40 px-4 py-3 text-sm">
-          <span className="text-red-300">Tu prueba gratuita ha terminado.</span>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm">
+          <span className="text-amber-300">
+            Activa tus 7 días de prueba gratis — sin cobro hasta el día 8.
+          </span>
           <button onClick={goToCheckout} className="btn-primary" disabled={busy === "checkout"}>
-            {busy === "checkout" ? "Abriendo pago…" : "Suscribirme por 14,99 €/mes"}
+            {busy === "checkout" ? "Abriendo…" : "Empezar 7 días gratis"}
           </button>
         </div>
       )}

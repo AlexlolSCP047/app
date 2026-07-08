@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { createSessionToken, sessionCookieOptions } from "@/lib/auth";
-import { getAccessInfo, trialHours } from "@/lib/access";
+import { getAccessInfo } from "@/lib/access";
 
 export const runtime = "nodejs";
 
@@ -32,10 +32,11 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const trialEndsAt = new Date(Date.now() + trialHours() * 60 * 60 * 1000);
 
+  // El acceso se activa al introducir la tarjeta en Stripe (7 días de prueba);
+  // registrarse solo crea la cuenta.
   const user = await prisma.user.create({
-    data: { name, email, phone, passwordHash, trialEndsAt },
+    data: { name, email, phone, passwordHash, trialEndsAt: new Date(), subscriptionStatus: "none" },
   });
 
   const token = await createSessionToken(user.id);

@@ -13,8 +13,8 @@ export default function WelcomeScreen({ navigation }: Props) {
       </Text>
       <Text style={styles.title}>Tu entrenador personal con inteligencia artificial</Text>
       <Text style={styles.subtitle}>
-        Planes de entrenamiento a tu medida y un entrenador disponible 24/7. Prueba 1 día gratis y
-        después 14,99 €/mes.
+        Planes de entrenamiento a tu medida y un entrenador disponible 24/7. Prueba 7 días gratis
+        y después 9,99 €/mes.
       </Text>
       <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate("Register")}>
         <Text style={styles.primaryBtnText}>Empezar mi prueba gratis</Text>

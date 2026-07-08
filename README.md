@@ -10,8 +10,9 @@ personalizados y acompaña al cliente por chat.
 ## Modelo de negocio implementado
 
 - **Registro gratuito** con nombre, correo y contraseña (teléfono opcional).
-- **Prueba gratuita de 1 día** (24 h, configurable con `TRIAL_HOURS`), sin tarjeta.
-- Al terminar la prueba, **suscripción mensual de 14,99 €** vía Stripe Checkout, que muestra el
+- **Prueba gratuita de 7 días con tarjeta por adelantado**: Stripe no cobra nada hasta el día 8
+  y el cliente puede cancelar antes sin coste.
+- Al terminar la prueba, **suscripción mensual de 9,99 €** vía Stripe Checkout, que muestra el
   importe en la moneda local del cliente y recoge la dirección de facturación en el pago.
 - El cliente puede cancelar o cambiar de tarjeta desde el **portal de facturación de Stripe**.
 
@@ -53,17 +54,17 @@ npm run dev                 # http://localhost:3000
 | `AI_PROVIDER` | `cerebras` o `claude` (opcional; automático según las claves presentes) |
 | `ANTHROPIC_API_KEY` | Clave de la API de Claude, solo si usas `AI_PROVIDER=claude` ([platform.claude.com](https://platform.claude.com)) |
 | `STRIPE_SECRET_KEY` | Clave secreta de Stripe |
-| `STRIPE_PRICE_ID` | Precio recurrente de 14,99 €/mes creado en Stripe |
+| `STRIPE_PRICE_ID` | Precio recurrente de 9,99 €/mes creado en Stripe |
 | `STRIPE_WEBHOOK_SECRET` | Secreto del webhook de Stripe |
-| `TRIAL_HOURS` | Horas de prueba gratis (por defecto 24) |
 
 ### Configurar Stripe
 
-1. Crea un producto "Plan Pro" con un **precio recurrente mensual de 14,99 EUR** y copia el
+1. Crea un producto "Plan Pro" con un **precio recurrente mensual de 9,99 EUR** y copia el
    `price_...` en `STRIPE_PRICE_ID`.
 2. Activa **Adaptive Pricing** en Stripe para que cada cliente vea el precio en su moneda.
 3. Webhook → endpoint `https://tudominio.com/api/stripe/webhook` con los eventos
-   `checkout.session.completed`, `customer.subscription.updated` y `customer.subscription.deleted`.
+   `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`
+   y `customer.subscription.deleted`.
    En local: `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
 
 ## Puesta en marcha — App móvil
@@ -107,11 +108,9 @@ El proveedor de IA es **intercambiable** con la variable `AI_PROVIDER`:
    conversiones; la dirección de facturación la recoge Stripe al pagar (necesaria para impuestos)
    y el teléfono queda opcional.
 2. **La suscripción se vende en la web, no dentro de la app.** Apple y Google cobran un 15–30 % de
-   comisión por pagos dentro de la app; con Stripe en la web conservas ~97 % de los 14,99 €.
+   comisión por pagos dentro de la app; con Stripe en la web conservas ~97 % de los 9,99 €.
    La app consume la suscripción ya activa de la cuenta.
-3. **Prueba de 1 día sin tarjeta**, como pediste. Está parametrizada (`TRIAL_HOURS`) para que
-   puedas probar 72 h o 7 días si la conversión del primer día es baja.
-4. **Precios ancla recomendados** (fácil de añadir): plan anual con descuento (p. ej. 399 €/año ≈
+3. **Precios ancla recomendados** (fácil de añadir): plan anual con descuento (p. ej. 399 €/año ≈
    33 €/mes) para subir el valor medio por cliente.
 
 ## Despliegue recomendado
