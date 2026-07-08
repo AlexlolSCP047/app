@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@/lib/db";
-import { stripe } from "@/lib/stripe";
+import { stripe, stripeWebhookSecret } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
 /**
  * Webhook de Stripe: mantiene sincronizado el estado de la suscripción.
- * Configura en el dashboard (o con `stripe listen`) los eventos:
- *   checkout.session.completed, customer.subscription.updated, customer.subscription.deleted
+ * Eventos configurados: checkout.session.completed,
+ * customer.subscription.updated y customer.subscription.deleted.
  */
 export async function POST(req: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = stripeWebhookSecret();
   const signature = req.headers.get("stripe-signature");
   if (!secret || !signature) {
     return NextResponse.json({ error: "Webhook no configurado." }, { status: 400 });
