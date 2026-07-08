@@ -64,7 +64,12 @@ export default function LoginPage() {
             {loading ? "Entrando…" : "Entrar"}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-zinc-400">
+        <p className="mt-3 text-center text-sm">
+          <Link href="/olvide-contrasena" className="text-zinc-400 hover:text-brand-400 hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-zinc-400">
           ¿Aún no tienes cuenta?{" "}
           <Link href="/registro" className="text-brand-400 hover:underline">
             Prueba gratis

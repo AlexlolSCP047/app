@@ -32,6 +32,21 @@ model User {
   messages     ChatMessage[]
   workouts     WorkoutLog[]
   progress     ProgressEntry[]
+  resetTokens  PasswordResetToken[]
+}
+
+// Token de un solo uso para "olvidé mi contraseña". Se guarda solo el hash
+// SHA-256 del token: el valor real viaja únicamente en el enlace del correo.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model TrainingProfile {
