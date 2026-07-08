@@ -5,7 +5,7 @@ Estos son los pasos completos para reproducir la compilación firmada.
 
 ## Requisitos
 
-- Node 18+, JDK 17, Android SDK con `platforms;android-35` y `build-tools;35.0.0`
+- Node 18+, JDK 17, Android SDK con `platforms;android-34` y `build-tools;34.0.0`
 - La **clave de subida** `fitcoach-upload.keystore` (guárdala fuera del repo; si se
   pierde, se puede restablecer desde Google Play Console → Play App Signing)
 
@@ -17,13 +17,14 @@ npm install
 npx expo prebuild -p android          # regenera android/ desde app.json
 ```
 
-En `android/gradle.properties` añade (Google Play exige target API 35):
+En `android/gradle.properties` añade (Google Play exige **target** API 35; se
+compila contra la 34 porque los módulos de Expo SDK 51 no compilan contra la 35):
 
 ```properties
-android.compileSdkVersion=35
+android.compileSdkVersion=34
 android.targetSdkVersion=35
-android.buildToolsVersion=35.0.0
-android.suppressUnsupportedCompileSdk=35
+android.buildToolsVersion=34.0.0
+android.suppressUnsupportedCompileSdk=34,35
 ```
 
 En `android/app/build.gradle`, dentro de `signingConfigs`, añade la configuración
