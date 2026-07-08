@@ -27,7 +27,7 @@ async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
 
 /**
  * Webhook de Stripe: mantiene sincronizado el estado de la suscripción
- * (prueba de 7 días → activa → impago → cancelada). Eventos configurados:
+ * (prueba de 1 día → activa → impago → cancelada). Eventos configurados:
  * checkout.session.completed, customer.subscription.created/updated/deleted.
  */
 export async function POST(req: Request) {

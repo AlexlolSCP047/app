@@ -26,7 +26,7 @@ export default function RegistroPage() {
         return;
       }
       // Cuenta creada: se abre Stripe para registrar la tarjeta y activar
-      // los 7 días de prueba (sin cobro hasta el día 8).
+      // el día de prueba (sin cobro hasta el segundo día).
       const checkout = await fetch("/api/checkout", { method: "POST" });
       const checkoutData = await checkout.json().catch(() => ({}));
       if (checkout.ok && checkoutData.url) {
@@ -47,8 +47,8 @@ export default function RegistroPage() {
       <div className="card w-full max-w-md">
         <h1 className="text-2xl font-bold">Crea tu cuenta</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          7 días de prueba gratis. Después te pediremos la tarjeta: no se cobra nada hasta el día
-          8 y puedes cancelar antes sin coste.
+          1 día de prueba gratis. Te pediremos la tarjeta: no se cobra nada hasta el segundo día
+          y puedes cancelar antes sin coste.
         </p>
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div>
@@ -98,7 +98,7 @@ export default function RegistroPage() {
           </div>
           {error && <p className="text-sm text-red-400">{error}</p>}
           <button className="btn-primary w-full py-3" disabled={loading}>
-            {loading ? "Creando cuenta…" : "Crear cuenta y empezar mis 7 días gratis"}
+            {loading ? "Creando cuenta…" : "Crear cuenta y empezar mi día gratis"}
           </button>
           <p className="text-center text-xs text-zinc-500">
             Al crear tu cuenta aceptas nuestra{" "}

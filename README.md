@@ -25,7 +25,7 @@ personalizados, se adapta a tu feedback y te acompaña por chat.
 ## Modelo de negocio implementado
 
 - **Registro gratuito** con nombre, correo y contraseña (teléfono opcional).
-- **Prueba gratuita de 7 días con tarjeta por adelantado**: Stripe no cobra nada hasta el día 8
+- **Prueba gratuita de 1 día con tarjeta por adelantado**: Stripe no cobra nada hasta el segundo día
   y el cliente puede cancelar antes sin coste.
 - Al terminar la prueba, **suscripción mensual de 9,99 €** vía Stripe Checkout, que muestra el
   importe en la moneda local del cliente y recoge la dirección de facturación en el pago.

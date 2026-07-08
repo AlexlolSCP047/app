@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 /**
  * Crea una sesión de Stripe Checkout para la suscripción mensual (9,99 €) con
- * 7 días de prueba: se pide la tarjeta por adelantado pero no se cobra nada
+ * 1 día de prueba: se pide la tarjeta por adelantado pero no se cobra nada
  * hasta que termina la prueba. Stripe recoge la dirección de facturación y
  * puede mostrar el precio en la moneda local del cliente (Adaptive Pricing).
  */
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
     }
 
-    // Los 7 días de prueba solo se ofrecen a quien nunca ha tenido suscripción
+    // El día de prueba solo se ofrece a quien nunca ha tenido suscripción
     // (evita reactivar la prueba cancelando y volviendo a suscribirse).
     const firstSubscription = !user.subscriptionId;
 

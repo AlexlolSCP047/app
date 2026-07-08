@@ -70,7 +70,7 @@ export async function POST() {
   if (!access.hasAccess) {
     const error =
       access.status === "none"
-        ? "Activa tus 7 días de prueba gratis para usar la IA (botón del panel)."
+        ? "Activa tu día de prueba gratis para usar la IA (botón del panel)."
         : "Tu suscripción no está activa. Reactívala para continuar.";
     return NextResponse.json({ error, code: "PAYWALL" }, { status: 402 });
   }

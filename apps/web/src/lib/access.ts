@@ -2,7 +2,7 @@ import type { User } from "@prisma/client";
 
 export type AccessInfo = {
   hasAccess: boolean;
-  // none (registrado sin tarjeta) | trialing (7 días de prueba) | active |
+  // none (registrado sin tarjeta) | trialing (día de prueba) | active |
   // past_due | canceled
   status: string;
   trialEndsAt: string | null; // fin de la prueba (solo cuando status = trialing)
@@ -11,7 +11,7 @@ export type AccessInfo = {
 };
 
 /**
- * El acceso lo da la suscripción de Stripe: "trialing" (7 días de prueba con
+ * El acceso lo da la suscripción de Stripe: "trialing" (1 día de prueba con
  * tarjeta ya introducida), "active" (pagando) o "past_due" (pago pendiente de
  * reintento). Registrarse sin introducir la tarjeta no da acceso.
  */
