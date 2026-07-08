@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "FitCoach IA",
+    "slug": "fitcoach-ia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "fitcoach",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#09090b",
+    "splash": {
+      "backgroundColor": "#09090b"
+    },
+    "ios": {
+      "bundleIdentifier": "com.fitcoach.ia",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.fitcoach.ia"
+    }
+  }
+}
