@@ -4,9 +4,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
  * URL del backend (la misma web de Next.js sirve la API).
  * En desarrollo con un emulador Android usa http://10.0.2.2:3000
  * En un dispositivo físico usa la IP local de tu ordenador, p. ej. http://192.168.1.50:3000
- * En producción, tu dominio: https://tudominio.com
  */
-export const API_URL = "http://10.0.2.2:3000";
+export const API_URL = "https://app-jbst.vercel.app";
 
 const TOKEN_KEY = "fitcoach_token";
 

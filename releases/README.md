@@ -1,16 +1,21 @@
 # Descargas
 
-## FitCoach IA — Android (previsualización)
+## FitCoach IA — Android v1.1.0 (lista para Google Play)
 
-- **Archivo:** `FitCoach-IA-v1.0.0-preview.apk` (62 MB)
-- **Requisitos:** Android 6.0 o superior
-- **Firma:** clave de depuración (solo para pruebas; la versión de Google Play se firma con EAS Build)
+| Archivo | Para qué sirve |
+|---|---|
+| `FitCoach-IA-v1.1.0-playstore.aab` (27 MB) | **Subir a Google Play Console** (Play solo acepta AAB) |
+| `FitCoach-IA-v1.1.0.apk` (62 MB) | Instalar directamente en un móvil para probar |
 
-### Instalación
+- **Versión:** 1.1.0 (versionCode 2) · **Target API:** 35 (Android 15, requisito de Play)
+- **Backend:** producción (`https://app-jbst.vercel.app`) — registro, plan, sesiones y chat funcionan
+- **Firma:** clave de subida `fitcoach-upload` (guardada fuera del repo; ver `apps/mobile/RELEASE.md`)
+
+### Instalación directa del APK
 1. Descarga el APK en tu móvil.
 2. Ábrelo y acepta "Instalar apps desconocidas" cuando Android lo pida.
-3. Listo: abre **FitCoach IA**.
+3. Listo: abre **FitCoach IA** e inicia sesión con tu cuenta de la web.
 
-> Nota: para usar registro, plan y chat, la app debe apuntar a un backend accesible
-> (ver `apps/mobile/src/api.ts` → `API_URL`). Sin backend puedes previsualizar
-> todas las pantallas y la navegación.
+### Versiones anteriores
+- `FitCoach-IA-v1.0.0-preview.apk`: previsualización con firma de depuración y backend
+  de desarrollo; ya no se recomienda.
