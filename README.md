@@ -11,6 +11,8 @@ personalizados, se adapta a tu feedback y te acompaña por chat.
 
 - **🔥 Hoy**: resumen semanal con sesiones completadas, racha de semanas y la próxima sesión a un
   toque de distancia.
+- **▶️ Modo entrenamiento**: sesión guiada a pantalla completa, ejercicio a ejercicio, con series,
+  temporizador de descanso automático y valoración final que alimenta el plan adaptativo.
 - **📅 Plan adaptativo**: al completar cada sesión marcas si fue *fácil, justa o difícil*; la IA
   usa ese feedback para ajustar la intensidad del siguiente plan (sobrecarga progresiva real).
 - **📖 Biblioteca de ejercicios**: técnica paso a paso, músculos implicados y errores comunes de
