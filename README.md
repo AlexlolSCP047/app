@@ -71,6 +71,8 @@ npm run dev                 # http://localhost:3000
 | `STRIPE_SECRET_KEY` | Clave secreta de Stripe |
 | `STRIPE_PRICE_ID` | Precio recurrente de 9,99 €/mes creado en Stripe |
 | `STRIPE_WEBHOOK_SECRET` | Secreto del webhook de Stripe |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | Correo saliente para "olvidé mi contraseña" — p. ej. Gmail con contraseña de aplicación (`smtp.gmail.com`, `587`) |
+| `RESEND_API_KEY` + `EMAIL_FROM` | Alternativa a SMTP: [resend.com](https://resend.com) con dominio verificado |
 
 ### Configurar Stripe
 
