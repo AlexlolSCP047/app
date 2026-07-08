@@ -2,7 +2,7 @@
   "expo": {
     "name": "FitCoach IA",
     "slug": "fitcoach-ia",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "scheme": "fitcoach",
     "userInterfaceStyle": "dark",
@@ -15,7 +15,8 @@
       "supportsTablet": false
     },
     "android": {
-      "package": "com.fitcoach.ia"
+      "package": "com.fitcoach.ia",
+      "versionCode": 2
     }
   }
 }

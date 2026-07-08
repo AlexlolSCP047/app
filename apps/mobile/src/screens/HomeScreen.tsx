@@ -1,5 +1,4 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import * as Linking from "expo-linking";
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
@@ -11,7 +10,7 @@ import {
   View,
 } from "react-native";
 import type { RootStackParamList } from "../../App";
-import { API_URL, Access, logout, me } from "../api";
+import { Access, logout, me } from "../api";
 import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
@@ -72,14 +71,12 @@ export default function HomeScreen({ navigation }: Props) {
       ) : (
         <View style={[styles.banner, { borderColor: colors.warning }]}>
           <Text style={{ color: colors.warning }}>
-            Activa tus 7 días de prueba gratis (9,99 €/mes después).
+            Tu cuenta no tiene una suscripción activa.
           </Text>
-          <TouchableOpacity
-            style={styles.subscribeBtn}
-            onPress={() => Linking.openURL(`${API_URL}/login`)}
-          >
-            <Text style={styles.subscribeBtnText}>Activar mi prueba en la web</Text>
-          </TouchableOpacity>
+          {/* Política de Google Play: no se enlaza a compras externas desde la app */}
+          <Text style={{ color: colors.muted, fontSize: 13 }}>
+            La suscripción se gestiona desde nuestra página web con esta misma cuenta.
+          </Text>
         </View>
       )}
 
@@ -121,12 +118,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     gap: 10,
   },
-  subscribeBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: 10,
-    paddingVertical: 12,
-  },
-  subscribeBtnText: { color: "#fff", fontWeight: "700", textAlign: "center" },
   menuCard: {
     backgroundColor: colors.card,
     borderColor: colors.border,
