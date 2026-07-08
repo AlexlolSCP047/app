@@ -33,6 +33,9 @@ export default async function PanelPage() {
               age: profile.age?.toString() ?? "",
               weightKg: profile.weightKg?.toString() ?? "",
               heightCm: profile.heightCm?.toString() ?? "",
+              sex: profile.sex ?? "",
+              focusAreas: profile.focusAreas ?? "",
+              sessionMins: profile.sessionMins?.toString() ?? "45",
             }
           : null
       }

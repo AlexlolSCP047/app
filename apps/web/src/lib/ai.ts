@@ -37,6 +37,9 @@ export function profileSummaryText(profile: {
   age?: number | null;
   weightKg?: number | null;
   heightCm?: number | null;
+  sex?: string | null;
+  focusAreas?: string | null;
+  sessionMins?: number | null;
 }): string {
   const lines = [
     `- Objetivo: ${profile.goal}`,
@@ -44,11 +47,37 @@ export function profileSummaryText(profile: {
     `- Días de entrenamiento por semana: ${profile.daysPerWeek}`,
     `- Material disponible: ${profile.equipment}`,
   ];
+  if (profile.sessionMins) lines.push(`- Duración por sesión: ~${profile.sessionMins} min`);
+  if (profile.focusAreas) lines.push(`- Zonas prioritarias: ${profile.focusAreas}`);
   if (profile.injuries) lines.push(`- Lesiones o limitaciones: ${profile.injuries}`);
+  if (profile.sex) lines.push(`- Sexo: ${profile.sex}`);
   if (profile.age) lines.push(`- Edad: ${profile.age}`);
   if (profile.weightKg) lines.push(`- Peso: ${profile.weightKg} kg`);
   if (profile.heightCm) lines.push(`- Altura: ${profile.heightCm} cm`);
   return lines.join("\n");
+}
+
+/**
+ * Resume el feedback de las últimas sesiones para que la IA adapte el
+ * siguiente plan (sobrecarga progresiva basada en la percepción de esfuerzo).
+ */
+export function adaptiveContext(
+  logs: { dayLabel: string; focus?: string | null; difficulty: string }[],
+): string | null {
+  if (logs.length === 0) return null;
+  const map: Record<string, string> = {
+    facil: "le resultó FÁCIL (súbele intensidad/volumen)",
+    justo: "fue un esfuerzo ADECUADO (progresa ligeramente)",
+    dificil: "le resultó DIFÍCIL (mantén o reduce ligeramente)",
+  };
+  const lines = logs
+    .slice(0, 8)
+    .map((l) => `- ${l.dayLabel}${l.focus ? ` (${l.focus})` : ""}: ${map[l.difficulty] ?? l.difficulty}`);
+  return (
+    "Historial reciente del cliente (sesiones completadas y su percepción de esfuerzo). " +
+    "Aplica sobrecarga progresiva teniéndolo en cuenta:\n" +
+    lines.join("\n")
+  );
 }
 
 /** Genera un objeto JSON que cumple el esquema dado (plan de entrenamiento). */

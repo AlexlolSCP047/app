@@ -1,11 +1,24 @@
 # FitCoach IA 🏋️
 
-Entrenador personal con inteligencia artificial (Claude) que diseña planes de entrenamiento
-personalizados y acompaña al cliente por chat.
+Entrenador personal con inteligencia artificial que diseña planes de entrenamiento
+personalizados, se adapta a tu feedback y te acompaña por chat.
 
-- **Web** (`apps/web`): Next.js 14 + Tailwind + Prisma + Stripe + Claude API. La web también es el
-  **backend/API** de la app móvil.
+- **Web** (`apps/web`): Next.js 14 + Tailwind + Prisma + Stripe + IA (Cerebras/Claude). La web
+  también es el **backend/API** de la app móvil.
 - **Móvil** (`apps/mobile`): Expo / React Native — **una sola base de código para Android e iOS**.
+
+## Funciones principales
+
+- **🔥 Hoy**: resumen semanal con sesiones completadas, racha de semanas y la próxima sesión a un
+  toque de distancia.
+- **📅 Plan adaptativo**: al completar cada sesión marcas si fue *fácil, justa o difícil*; la IA
+  usa ese feedback para ajustar la intensidad del siguiente plan (sobrecarga progresiva real).
+- **📖 Biblioteca de ejercicios**: técnica paso a paso, músculos implicados y errores comunes de
+  cualquier ejercicio, más **sustitución inteligente** si uno no es viable.
+- **📈 Progreso**: registro de peso corporal con gráfica y marcas por ejercicio, junto al
+  historial de sesiones.
+- **💬 Chat** con el entrenador IA (streaming en web) y **⚙️ perfil por pasos** tipo cuestionario
+  (objetivo, nivel, días, duración, material, zonas prioritarias, lesiones).
 
 ## Modelo de negocio implementado
 
@@ -21,12 +34,12 @@ personalizados y acompaña al cliente por chat.
 ```
 apps/
 ├── web/                       # Web + API (Next.js)
-│   ├── prisma/schema.prisma   # Usuarios, perfiles, planes, chat
+│   ├── prisma/schema.prisma   # Usuarios, perfiles, planes, chat, sesiones, progreso
 │   └── src/
 │       ├── app/               # Landing, registro, login, panel
-│       ├── app/api/           # auth, profile, ai/plan, ai/chat, checkout, webhook
-│       ├── components/        # Panel del cliente (perfil, plan, chat)
-│       └── lib/               # Prisma, JWT, Stripe, Claude
+│       ├── app/api/           # auth, profile, ai/*, workouts, progress, checkout, webhook
+│       ├── components/        # Panel del cliente (hoy, plan, ejercicios, progreso, chat, perfil)
+│       └── lib/               # Prisma, JWT, Stripe, IA (Cerebras/Claude)
 └── mobile/                    # App Android + iOS (Expo)
     ├── App.tsx                # Navegación
     └── src/screens/           # Welcome, Registro, Login, Home, Perfil, Plan, Chat
@@ -93,13 +106,16 @@ El proveedor de IA es **intercambiable** con la variable `AI_PROVIDER`:
 | **Cerebras** (por defecto) | `gemma-4-31b` | Gratis | `CEREBRAS_API_KEY` presente |
 | Claude (Anthropic) | `claude-opus-4-8` | De pago (mayor calidad) | `AI_PROVIDER=claude` + `ANTHROPIC_API_KEY` |
 
-- **Generación de plan** (`POST /api/ai/plan`): el modelo recibe el perfil del
-  cliente y devuelve el plan semanal como **JSON estructurado** (salida garantizada por esquema),
-  que se guarda en la base de datos y se muestra en web y móvil.
+- **Generación de plan** (`POST /api/ai/plan`): el modelo recibe el perfil del cliente **y el
+  feedback de sus últimas sesiones** (fácil/justo/difícil) y devuelve el plan semanal como
+  **JSON estructurado** (salida garantizada por esquema), ajustando la intensidad a su evolución.
+- **Biblioteca** (`POST /api/ai/exercise`): detalle de técnica de cualquier ejercicio
+  (`mode: "detail"`) o una alternativa equivalente (`mode: "substitute"`), también con salida
+  estructurada.
 - **Chat** (`POST /api/ai/chat`): conversación con memoria (últimos 20 mensajes) y el perfil del
   cliente como contexto. En web la respuesta llega en **streaming**; la app móvil pide la respuesta
   completa (`stream: false`).
-- Ambos endpoints comprueban el acceso (prueba activa o suscripción) y devuelven `402 PAYWALL`
+- Todos los endpoints comprueban el acceso (prueba activa o suscripción) y devuelven `402 PAYWALL`
   si ha caducado.
 
 ## Decisiones de producto (y por qué)

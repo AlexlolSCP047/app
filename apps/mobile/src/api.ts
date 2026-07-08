@@ -71,6 +71,14 @@ export type Plan = {
 
 export type ChatMsg = { role: "user" | "assistant"; content: string };
 
+export type WorkoutLog = {
+  id: string;
+  dayLabel: string;
+  focus: string | null;
+  difficulty: "facil" | "justo" | "dificil";
+  completedAt: string;
+};
+
 // ---- Llamadas a la API ----
 
 export async function register(input: {
@@ -119,6 +127,21 @@ export async function getPlan() {
 
 export async function generatePlan() {
   return request<{ plan: { data: Plan } }>("/api/ai/plan", { method: "POST" });
+}
+
+export async function getWorkouts() {
+  return request<{ workouts: WorkoutLog[] }>("/api/workouts");
+}
+
+export async function logWorkout(input: {
+  dayLabel: string;
+  difficulty: "facil" | "justo" | "dificil";
+  focus?: string;
+}) {
+  return request<{ workout: WorkoutLog }>("/api/workouts", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 export async function getChat() {
