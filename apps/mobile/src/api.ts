@@ -52,6 +52,12 @@ export type Profile = {
   daysPerWeek: number;
   equipment: string;
   injuries?: string | null;
+  sex?: string | null;
+  focusAreas?: string | null;
+  sessionMins?: number | null;
+  age?: number | null;
+  weightKg?: number | null;
+  heightCm?: number | null;
 };
 
 export type Exercise = {
@@ -76,6 +82,30 @@ export type WorkoutLog = {
   focus: string | null;
   difficulty: "facil" | "justo" | "dificil";
   completedAt: string;
+};
+
+export type ProgressEntry = {
+  id: string;
+  kind: "peso_corporal" | "ejercicio";
+  label: string;
+  value: number;
+  reps?: number | null;
+  createdAt: string;
+};
+
+export type ExerciseDetail = {
+  nombre: string;
+  musculos: string[];
+  tecnica: string[];
+  errores: string[];
+  consejo: string;
+};
+
+export type Substitution = {
+  original: string;
+  alternativa: string;
+  motivo: string;
+  musculos: string[];
 };
 
 // ---- Llamadas a la API ----
@@ -141,6 +171,46 @@ export async function logWorkout(input: {
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+export async function getProgress() {
+  return request<{ entries: ProgressEntry[] }>("/api/progress");
+}
+
+export async function addProgress(input: {
+  kind: "peso_corporal" | "ejercicio";
+  label: string;
+  value: number;
+  reps?: number;
+}) {
+  return request<{ entry: ProgressEntry }>("/api/progress", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function exerciseDetail(exercise: string) {
+  return request<{ detail: ExerciseDetail }>("/api/ai/exercise", {
+    method: "POST",
+    body: JSON.stringify({ exercise, mode: "detail" }),
+  });
+}
+
+export async function exerciseSubstitute(exercise: string, reason?: string) {
+  return request<{ substitution: Substitution }>("/api/ai/exercise", {
+    method: "POST",
+    body: JSON.stringify({ exercise, mode: "substitute", reason }),
+  });
+}
+
+/** Abre el pago: el backend crea la sesión de Stripe y devuelve su URL. */
+export async function createCheckout() {
+  return request<{ url: string }>("/api/checkout", { method: "POST" });
+}
+
+/** Portal de facturación de Stripe (gestionar o cancelar la suscripción). */
+export async function billingPortal() {
+  return request<{ url: string }>("/api/billing/portal", { method: "POST" });
 }
 
 export async function getChat() {

@@ -1,3 +1,4 @@
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -7,8 +8,22 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { generatePlan, getPlan, getWorkouts, logWorkout, Plan, WorkoutLog } from "../api";
+import type { RootStackParamList } from "../../App";
+import {
+  Exercise,
+  ExerciseDetail,
+  Plan,
+  WorkoutLog,
+  exerciseDetail,
+  exerciseSubstitute,
+  generatePlan,
+  getPlan,
+  getWorkouts,
+  logWorkout,
+} from "../api";
 import { colors } from "../theme";
+
+type Props = NativeStackScreenProps<RootStackParamList, "Plan">;
 
 /** Lunes 00:00 de la semana actual (igual que en la web). */
 function startOfWeek(): Date {
@@ -21,12 +36,88 @@ function startOfWeek(): Date {
 }
 
 const DIFFICULTIES: { key: "facil" | "justo" | "dificil"; label: string }[] = [
-  { key: "facil", label: "😌 Fácil" },
-  { key: "justo", label: "💪 Justo" },
-  { key: "dificil", label: "🥵 Difícil" },
+  { key: "facil", label: "😎" },
+  { key: "justo", label: "💪" },
+  { key: "dificil", label: "🥵" },
 ];
 
-export default function PlanScreen() {
+/** Fila de ejercicio: al tocarla, la IA muestra la ficha de técnica. */
+function ExerciseRow({ ej }: { ej: Exercise }) {
+  const [open, setOpen] = useState(false);
+  const [detail, setDetail] = useState<ExerciseDetail | null>(null);
+  const [sub, setSub] = useState<{ alternativa: string; motivo: string } | null>(null);
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function toggle() {
+    const willOpen = !open;
+    setOpen(willOpen);
+    if (!willOpen || detail) return;
+    setLoading("detail");
+    try {
+      const data = await exerciseDetail(ej.nombre);
+      setDetail(data.detail);
+    } catch {
+      // sin ficha: se mantiene la fila básica
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function substitute() {
+    setLoading("sub");
+    try {
+      const data = await exerciseSubstitute(ej.nombre);
+      setSub(data.substitution);
+    } catch {
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  return (
+    <View style={styles.exercise}>
+      <TouchableOpacity onPress={toggle}>
+        <Text style={styles.exerciseName}>{ej.nombre}</Text>
+        <Text style={styles.exerciseDetail}>
+          {ej.series} series × {ej.repeticiones} · descanso {ej.descansoSegundos} s
+        </Text>
+        {ej.notas ? <Text style={styles.exerciseNotes}>{ej.notas}</Text> : null}
+      </TouchableOpacity>
+
+      {open && (
+        <View style={styles.detailBox}>
+          {loading === "detail" && <Text style={styles.detailText}>La IA está preparando la ficha…</Text>}
+          {detail && (
+            <>
+              <Text style={styles.detailMuscles}>💪 {detail.musculos.join(" · ")}</Text>
+              {detail.tecnica.map((t, i) => (
+                <Text key={i} style={styles.detailText}>
+                  {i + 1}. {t}
+                </Text>
+              ))}
+              <Text style={[styles.detailText, { marginTop: 6 }]}>💡 {detail.consejo}</Text>
+            </>
+          )}
+          <TouchableOpacity style={styles.subBtn} onPress={substitute} disabled={loading === "sub"}>
+            {loading === "sub" ? (
+              <ActivityIndicator color={colors.text} size="small" />
+            ) : (
+              <Text style={styles.subBtnText}>🔄 Sustituir este ejercicio</Text>
+            )}
+          </TouchableOpacity>
+          {sub && (
+            <View style={styles.subCard}>
+              <Text style={styles.subCardTitle}>Alternativa: {sub.alternativa}</Text>
+              <Text style={styles.subCardText}>{sub.motivo}</Text>
+            </View>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
+export default function PlanScreen({ navigation }: Props) {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [workouts, setWorkouts] = useState<WorkoutLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,24 +134,10 @@ export default function PlanScreen() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Días ya completados esta semana → se marcan con ✅ en su tarjeta.
   const monday = startOfWeek();
   const doneThisWeek = new Set(
     workouts.filter((w) => new Date(w.completedAt) >= monday).map((w) => w.dayLabel),
   );
-
-  async function onComplete(dayLabel: string, focus: string, difficulty: "facil" | "justo" | "dificil") {
-    setSaving(dayLabel);
-    setError(null);
-    try {
-      const data = await logWorkout({ dayLabel, focus, difficulty });
-      setWorkouts((prev) => [data.workout, ...prev]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo guardar la sesión.");
-    } finally {
-      setSaving(null);
-    }
-  }
 
   async function onGenerate() {
     setGenerating(true);
@@ -75,6 +152,19 @@ export default function PlanScreen() {
     }
   }
 
+  async function onComplete(dayLabel: string, focus: string, difficulty: "facil" | "justo" | "dificil") {
+    setSaving(dayLabel);
+    setError(null);
+    try {
+      const data = await logWorkout({ dayLabel, focus, difficulty });
+      setWorkouts((prev) => [data.workout, ...prev]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo guardar la sesión.");
+    } finally {
+      setSaving(null);
+    }
+  }
+
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: "center" }]}>
@@ -83,17 +173,24 @@ export default function PlanScreen() {
     );
   }
 
+  const hasFeedback = workouts.length > 0;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
       <TouchableOpacity style={styles.btn} onPress={onGenerate} disabled={generating}>
         {generating ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.btnText}>{plan ? "Regenerar plan" : "Generar mi plan"}</Text>
+          <Text style={styles.btnText}>
+            {plan ? (hasFeedback ? "🧠 Adaptar plan a mi progreso" : "Regenerar plan") : "Generar mi plan"}
+          </Text>
         )}
       </TouchableOpacity>
       {generating && (
         <Text style={styles.hint}>La IA está diseñando tu plan; puede tardar un poco…</Text>
+      )}
+      {plan && hasFeedback && !generating && (
+        <Text style={styles.hint}>La IA usará tus sesiones marcadas como fácil/justo/difícil.</Text>
       )}
       {error && <Text style={{ color: colors.danger, marginTop: 12 }}>{error}</Text>}
 
@@ -113,30 +210,32 @@ export default function PlanScreen() {
                   {dia.dia} <Text style={{ color: colors.primary }}>· {dia.enfoque}</Text>
                 </Text>
                 {dia.ejercicios.map((ej, i) => (
-                  <View key={i} style={styles.exercise}>
-                    <Text style={styles.exerciseName}>{ej.nombre}</Text>
-                    <Text style={styles.exerciseDetail}>
-                      {ej.series} series × {ej.repeticiones} · descanso {ej.descansoSegundos} s
-                    </Text>
-                    {ej.notas ? <Text style={styles.exerciseNotes}>{ej.notas}</Text> : null}
-                  </View>
+                  <ExerciseRow key={i} ej={ej} />
                 ))}
                 {!done && (
-                  <View style={styles.chipsRow}>
-                    <Text style={styles.chipsLabel}>¿Cómo fue? Marca para completar:</Text>
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      {DIFFICULTIES.map((d) => (
-                        <TouchableOpacity
-                          key={d.key}
-                          style={styles.chip}
-                          disabled={saving === dia.dia}
-                          onPress={() => onComplete(dia.dia, dia.enfoque, d.key)}
-                        >
-                          <Text style={styles.chipText}>{d.label}</Text>
-                        </TouchableOpacity>
-                      ))}
+                  <>
+                    <TouchableOpacity
+                      style={styles.trainBtn}
+                      onPress={() => navigation.navigate("Workout", { dia })}
+                    >
+                      <Text style={styles.trainBtnText}>▶ Entrenar esta sesión</Text>
+                    </TouchableOpacity>
+                    <View style={styles.chipsRow}>
+                      <Text style={styles.chipsLabel}>¿Ya la hiciste por tu cuenta? Marca cómo fue:</Text>
+                      <View style={{ flexDirection: "row", gap: 8 }}>
+                        {DIFFICULTIES.map((d) => (
+                          <TouchableOpacity
+                            key={d.key}
+                            style={styles.chip}
+                            disabled={saving === dia.dia}
+                            onPress={() => onComplete(dia.dia, dia.enfoque, d.key)}
+                          >
+                            <Text style={styles.chipText}>✓ {d.label}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
                     </View>
-                  </View>
+                  </>
                 )}
               </View>
             );
@@ -169,9 +268,58 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 14,
   },
-  cardDone: { borderColor: colors.primary },
+  cardDone: { borderColor: colors.primaryDark, opacity: 0.85 },
   cardTitle: { color: colors.text, fontWeight: "700", fontSize: 15, marginBottom: 8 },
-  chipsRow: { borderTopColor: colors.border, borderTopWidth: 1, paddingTop: 12, marginTop: 4 },
+  cardText: { color: colors.muted, fontSize: 14, lineHeight: 21 },
+  exercise: {
+    borderTopColor: colors.border,
+    borderTopWidth: 1,
+    paddingVertical: 10,
+  },
+  exerciseName: {
+    color: colors.text,
+    fontWeight: "600",
+    fontSize: 14,
+    textDecorationLine: "underline",
+    textDecorationColor: colors.border,
+  },
+  exerciseDetail: { color: colors.primary, fontSize: 13, marginTop: 2 },
+  exerciseNotes: { color: colors.muted, fontSize: 12, marginTop: 4 },
+  detailBox: {
+    backgroundColor: colors.background,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+  },
+  detailMuscles: { color: colors.primary, fontSize: 12, marginBottom: 6 },
+  detailText: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  subBtn: {
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 8,
+    marginTop: 10,
+  },
+  subBtnText: { color: colors.text, fontSize: 12, textAlign: "center", fontWeight: "600" },
+  subCard: {
+    borderColor: colors.primaryDark,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 8,
+  },
+  subCardTitle: { color: colors.primary, fontWeight: "700", fontSize: 12 },
+  subCardText: { color: colors.muted, fontSize: 11, marginTop: 3, lineHeight: 16 },
+  trainBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: 12,
+    marginTop: 12,
+  },
+  trainBtnText: { color: "#fff", fontWeight: "700", textAlign: "center", fontSize: 14 },
+  chipsRow: { borderTopColor: colors.border, borderTopWidth: 1, paddingTop: 12, marginTop: 12 },
   chipsLabel: { color: colors.muted, fontSize: 12, marginBottom: 8 },
   chip: {
     borderColor: colors.border,
@@ -181,13 +329,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   chipText: { color: colors.text, fontSize: 13 },
-  cardText: { color: colors.muted, fontSize: 14, lineHeight: 21 },
-  exercise: {
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    paddingVertical: 10,
-  },
-  exerciseName: { color: colors.text, fontWeight: "600", fontSize: 14 },
-  exerciseDetail: { color: colors.primary, fontSize: 13, marginTop: 2 },
-  exerciseNotes: { color: colors.muted, fontSize: 12, marginTop: 4 },
 });
