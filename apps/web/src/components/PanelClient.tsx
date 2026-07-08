@@ -103,7 +103,7 @@ export default function PanelClient(props: {
     setNotice(null);
     try {
       const res = await fetch("/api/ai/plan", { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setNotice(data.error ?? "No se pudo generar el plan.");
         return;
@@ -163,18 +163,26 @@ export default function PanelClient(props: {
     setBusy("checkout");
     try {
       const res = await fetch("/api/checkout", { method: "POST" });
-      const data = await res.json();
+      // .catch(): una respuesta de error puede venir vacía y no ser JSON válido
+      const data = await res.json().catch(() => ({}));
       if (data.url) window.location.href = data.url;
-      else setNotice(data.error ?? "No se pudo abrir el pago.");
+      else setNotice(data.error ?? "No se pudo abrir el pago. Inténtalo de nuevo en unos minutos.");
+    } catch {
+      setNotice("Error de conexión al abrir el pago. Inténtalo de nuevo.");
     } finally {
       setBusy(null);
     }
   }
 
   async function openPortal() {
-    const res = await fetch("/api/billing/portal", { method: "POST" });
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
+    try {
+      const res = await fetch("/api/billing/portal", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (data.url) window.location.href = data.url;
+      else setNotice(data.error ?? "No se pudo abrir la gestión de la suscripción.");
+    } catch {
+      setNotice("Error de conexión. Inténtalo de nuevo.");
+    }
   }
 
   async function logout() {
