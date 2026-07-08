@@ -7,6 +7,11 @@ const features = [
     text: "Marca cada sesión como fácil, justa o difícil y la IA ajusta tu siguiente semana: más carga cuando puedes, más descanso cuando lo necesitas.",
   },
   {
+    icon: "▶️",
+    title: "Entrena con guía en directo",
+    text: "Modo entrenamiento paso a paso: cada serie, cada descanso cronometrado y la técnica de cada ejercicio, sin pensar en nada más.",
+  },
+  {
     icon: "📅",
     title: "Tu semana, organizada",
     text: "Ve de un vistazo qué toca hoy, completa sesiones con un toque y mantén tu racha semana tras semana.",
