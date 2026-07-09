@@ -17,6 +17,9 @@ personalizados, se adapta a tu feedback y te acompaña por chat.
   usa ese feedback para ajustar la intensidad del siguiente plan (sobrecarga progresiva real).
 - **📖 Biblioteca de ejercicios**: técnica paso a paso, músculos implicados y errores comunes de
   cualquier ejercicio, más **sustitución inteligente** si uno no es viable.
+- **🎬 Vídeos demostrativos**: clips propios generados con IA (Higgsfield — Veo 3.1 / Seedance)
+  para todos los ejercicios de las clases guiadas; los ejercicios que aún no tienen clip propio
+  enlazan a una búsqueda curada de YouTube como respaldo.
 - **📈 Progreso**: registro de peso corporal con gráfica y marcas por ejercicio, junto al
   historial de sesiones.
 - **💬 Chat** con el entrenador IA (streaming en web) y **⚙️ perfil por pasos** tipo cuestionario
