@@ -194,6 +194,7 @@ const EXERCISE_VIDEOS: Record<string, string> = {
   "hip thrust": `${VIDEO_CDN}/hf_20260709_142802_dfcf95f1-6d5f-4784-8b79-59a20cab3aba.mp4`,
   "elevaciones de gemelos": `${VIDEO_CDN}/hf_20260709_142755_f743b4cf-fad9-4b04-bbe3-5d28b1033ec6.mp4`,
   "bird dog": `${VIDEO_CDN}/hf_20260709_142751_7f93e3a7-750e-45dc-8ad8-f999d6328edf.mp4`,
+  "superman": `${VIDEO_CDN}/hf_20260709_143244_58e28aaf-e575-4eb3-8d4b-3cfcc09979db.mp4`,
 };
 
 /** Variantes y sinónimos que comparten clip con un ejercicio de la lista. */
@@ -283,6 +284,9 @@ const EXERCISE_VIDEO_ALIASES: Record<string, string> = {
   "gemelos de pie": "elevaciones de gemelos",
   "perro de caza": "bird dog",
   "perro pajaro": "bird dog",
+  "supermans": "superman",
+  "superman en el suelo": "superman",
+  "extension lumbar en el suelo": "superman",
 };
 
 /** "Plancha lateral (izq.)" → "plancha lateral"; "Gato-camello" → "gato camello". */
