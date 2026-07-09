@@ -14,6 +14,8 @@ import PlanScreen from "./src/screens/PlanScreen";
 import WorkoutScreen from "./src/screens/WorkoutScreen";
 import LibraryScreen from "./src/screens/LibraryScreen";
 import ProgressScreen from "./src/screens/ProgressScreen";
+import ClassesScreen from "./src/screens/ClassesScreen";
+import DietScreen from "./src/screens/DietScreen";
 import ChatScreen from "./src/screens/ChatScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 
@@ -25,6 +27,8 @@ export type RootStackParamList = {
   Plan: undefined;
   Workout: { dia: Plan["dias"][number] };
   Library: undefined;
+  Classes: undefined;
+  Diet: undefined;
   Progress: undefined;
   Chat: undefined;
   Profile: undefined;
@@ -77,6 +81,8 @@ export default function App() {
         <Stack.Screen name="Plan" component={PlanScreen} options={{ title: "Mi plan" }} />
         <Stack.Screen name="Workout" component={WorkoutScreen} options={{ title: "Entrenando 🔥" }} />
         <Stack.Screen name="Library" component={LibraryScreen} options={{ title: "Ejercicios" }} />
+        <Stack.Screen name="Classes" component={ClassesScreen} options={{ title: "Clases guiadas" }} />
+        <Stack.Screen name="Diet" component={DietScreen} options={{ title: "Dieta y comidas" }} />
         <Stack.Screen name="Progress" component={ProgressScreen} options={{ title: "Mi progreso" }} />
         <Stack.Screen name="Chat" component={ChatScreen} options={{ title: "Chat con la IA" }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: "Mi perfil" }} />

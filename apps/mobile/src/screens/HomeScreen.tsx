@@ -169,7 +169,7 @@ export default function HomeScreen({ navigation }: Props) {
       ) : access?.trialActive ? (
         <View style={[styles.banner, { borderColor: colors.primaryDark }]}>
           <Text style={{ color: colors.primary }}>
-            🎁 Prueba gratuita activa{trialDaysLeft > 0 ? ` — te ${trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}` : ""}. Después, 9,99 €/mes automáticamente.
+            🎁 Prueba gratuita activa{trialDaysLeft > 0 ? ` — te ${trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}` : ""}. Después, 14,99 €/mes automáticamente.
           </Text>
         </View>
       ) : access?.status === "past_due" ? (
@@ -186,7 +186,7 @@ export default function HomeScreen({ navigation }: Props) {
           </Text>
           <Text style={{ color: colors.muted, fontSize: 13 }}>
             {access?.status === "canceled"
-              ? "Recupera tu plan adaptativo, el modo entrenamiento y el chat por 9,99 €/mes."
+              ? "Recupera tu plan adaptativo, el modo entrenamiento y el chat por 14,99 €/mes."
               : "Sin cobro hasta mañana. Se abrirá el pago seguro de Stripe en tu navegador."}
           </Text>
           <TouchableOpacity style={styles.subscribeBtn} onPress={openCheckout} disabled={paying}>
@@ -194,7 +194,7 @@ export default function HomeScreen({ navigation }: Props) {
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={styles.subscribeBtnText}>
-                {access?.status === "canceled" ? "💳 Suscribirme — 9,99 €/mes" : "💳 Empezar mi prueba gratis"}
+                {access?.status === "canceled" ? "💳 Suscribirme — 14,99 €/mes" : "💳 Empezar mi prueba gratis"}
               </Text>
             )}
           </TouchableOpacity>
@@ -275,6 +275,16 @@ export default function HomeScreen({ navigation }: Props) {
       <TouchableOpacity style={styles.menuCard} onPress={() => navigation.navigate("Library")}>
         <Text style={styles.menuTitle}>📖 Biblioteca de ejercicios</Text>
         <Text style={styles.menuText}>Técnica, músculos y errores de cualquier ejercicio.</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.menuCard} onPress={() => navigation.navigate("Classes")}>
+        <Text style={styles.menuTitle}>🎥 Clases guiadas</Text>
+        <Text style={styles.menuText}>Core, HIIT, movilidad… cronometradas, sin material.</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.menuCard} onPress={() => navigation.navigate("Diet")}>
+        <Text style={styles.menuTitle}>🍽️ Dieta y comidas</Text>
+        <Text style={styles.menuText}>Tu dieta con macros y análisis de lo que comes.</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.menuCard} onPress={() => navigation.navigate("Progress")}>

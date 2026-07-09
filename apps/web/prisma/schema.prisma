@@ -33,6 +33,18 @@ model User {
   workouts     WorkoutLog[]
   progress     ProgressEntry[]
   resetTokens  PasswordResetToken[]
+  diets        DietPlan[]
+}
+
+// Último plan de dieta generado por la IA (JSON con comidas y macros)
+model DietPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dietJson  String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }
 
 // Token de un solo uso para "olvidé mi contraseña". Se guarda solo el hash

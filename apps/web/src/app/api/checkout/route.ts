@@ -6,7 +6,7 @@ import { stripe, stripePriceId, TRIAL_DAYS } from "@/lib/stripe";
 export const runtime = "nodejs";
 
 /**
- * Crea una sesión de Stripe Checkout para la suscripción mensual (9,99 €) con
+ * Crea una sesión de Stripe Checkout para la suscripción mensual (14,99 €) con
  * 1 día de prueba: se pide la tarjeta por adelantado pero no se cobra nada
  * hasta que termina la prueba. Stripe recoge la dirección de facturación y
  * puede mostrar el precio en la moneda local del cliente (Adaptive Pricing).

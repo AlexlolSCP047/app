@@ -21,6 +21,8 @@ import {
   getWorkouts,
   logWorkout,
 } from "../api";
+import * as Linking from "expo-linking";
+import { exerciseVideoUrl } from "../classes";
 import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Plan">;
@@ -98,6 +100,11 @@ function ExerciseRow({ ej }: { ej: Exercise }) {
               <Text style={[styles.detailText, { marginTop: 6 }]}>💡 {detail.consejo}</Text>
             </>
           )}
+          <TouchableOpacity onPress={() => Linking.openURL(exerciseVideoUrl(ej.nombre))}>
+            <Text style={{ color: colors.primary, fontSize: 12, marginTop: 8, textDecorationLine: "underline" }}>
+              🎬 Ver vídeo del ejercicio
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.subBtn} onPress={substitute} disabled={loading === "sub"}>
             {loading === "sub" ? (
               <ActivityIndicator color={colors.text} size="small" />

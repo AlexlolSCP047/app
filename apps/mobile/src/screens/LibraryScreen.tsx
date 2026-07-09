@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as Linking from "expo-linking";
 import { ExerciseDetail, Substitution, exerciseDetail, exerciseSubstitute, getPlan } from "../api";
+import { exerciseVideoUrl } from "../classes";
 import { colors } from "../theme";
 
 /** Enciclopedia de ejercicios: la IA explica técnica, músculos y errores. */
@@ -114,6 +116,10 @@ export default function LibraryScreen() {
           ))}
 
           <Text style={styles.tip}>💡 {detail.consejo}</Text>
+
+          <TouchableOpacity style={styles.subBtn} onPress={() => Linking.openURL(exerciseVideoUrl(detail.nombre))}>
+            <Text style={styles.subBtnText}>🎬 Ver vídeo del ejercicio</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.subBtn} onPress={substitute} disabled={loading === "sub"}>
             {loading === "sub" ? (
