@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { DietData, MealAnalysis, analyzeMeal, generateDiet, getDiet } from "../api";
+import { DietData, MealAnalysis, analyzeMeal, generateDiet, getDiet, upgradePlan } from "../api";
 import { colors } from "../theme";
 
 /** Dieta generada por IA + analizador de comidas. */
@@ -18,6 +18,27 @@ export default function DietScreen() {
   const [analysis, setAnalysis] = useState<MealAnalysis | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsPro, setNeedsPro] = useState(false);
+
+  async function onUpgrade() {
+    setBusy("upgrade");
+    setError(null);
+    try {
+      await upgradePlan();
+      setNeedsPro(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo mejorar el plan.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function handleErr(e: unknown, fallback: string) {
+    const err = e as Error & { code?: string };
+    if (err?.code === "PLAN_BASIC") setNeedsPro(true);
+    else setError(err instanceof Error ? err.message : fallback);
+  }
+
 
   useEffect(() => {
     getDiet().then((d) => d.diet && setDiet(d.diet.data)).catch(() => {});
@@ -30,7 +51,7 @@ export default function DietScreen() {
       const d = await generateDiet();
       setDiet(d.diet.data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo generar la dieta.");
+      handleErr(e, "No se pudo generar la dieta.");
     } finally {
       setBusy(null);
     }
@@ -45,10 +66,29 @@ export default function DietScreen() {
       const d = await analyzeMeal(meal.trim());
       setAnalysis(d.analysis);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo analizar la comida.");
+      handleErr(e, "No se pudo analizar la comida.");
     } finally {
       setBusy(null);
     }
+  }
+
+  if (needsPro) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
+        <View style={[styles.card, { alignItems: "center" }]}>
+          <Text style={{ fontSize: 40 }}>⭐</Text>
+          <Text style={[styles.cardTitle, { fontSize: 18, marginTop: 8 }]}>Dieta y comidas — plan Pro</Text>
+          <Text style={[styles.cardText, { textAlign: "center" }]}>
+            Tu plan Básico incluye todo el entrenamiento. Pásate al Pro por 14,99 €/mes y añade tu
+            dieta con macros y el análisis de comidas. Solo pagas la diferencia prorrateada.
+          </Text>
+          <TouchableOpacity style={styles.btn} onPress={onUpgrade} disabled={busy === "upgrade"}>
+            {busy === "upgrade" ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>⭐ Pasar al plan Pro</Text>}
+          </TouchableOpacity>
+          {error && <Text style={{ color: colors.danger, marginTop: 10 }}>{error}</Text>}
+        </View>
+      </ScrollView>
+    );
   }
 
   return (

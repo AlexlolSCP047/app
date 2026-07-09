@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { stripe, stripePriceId, TRIAL_DAYS } from "@/lib/stripe";
+import { stripe, stripePriceId, TRIAL_DAYS, type PlanTier } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,9 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "No autenticado." }, { status: 401 });
 
-  const priceId = stripePriceId();
+  const body = await req.json().catch(() => null);
+  const plan: PlanTier = body?.plan === "basico" ? "basico" : "pro";
+  const priceId = stripePriceId(plan);
   // URL de retorno tras el pago: APP_URL si está definida; si no, el dominio actual.
   const appUrl = process.env.APP_URL ?? new URL(req.url).origin;
 
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
       allow_promotion_codes: true,
       success_url: `${appUrl}/panel?checkout=success`,
       cancel_url: `${appUrl}/panel?checkout=cancel`,
-      metadata: { userId: user.id },
+      metadata: { userId: user.id, plan },
     });
 
     return NextResponse.json({ url: session.url });

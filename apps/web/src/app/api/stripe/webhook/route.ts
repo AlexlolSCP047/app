@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { prisma } from "@/lib/db";
-import { stripe, stripeWebhookSecret } from "@/lib/stripe";
+import { planFromPriceId, stripe, stripeWebhookSecret } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
@@ -15,12 +15,14 @@ function mapStatus(status: Stripe.Subscription.Status): string {
 
 async function syncSubscription(sub: Stripe.Subscription): Promise<void> {
   const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+  const priceId = sub.items.data[0]?.price?.id ?? "";
   await prisma.user.updateMany({
     where: { stripeCustomerId: customerId },
     data: {
       subscriptionStatus: mapStatus(sub.status),
       subscriptionId: sub.id,
       currentPeriodEnd: new Date(sub.current_period_end * 1000),
+      ...(priceId ? { planTier: planFromPriceId(priceId) } : {}),
     },
   });
 }

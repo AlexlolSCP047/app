@@ -8,6 +8,7 @@ export type AccessInfo = {
   trialEndsAt: string | null; // fin de la prueba (solo cuando status = trialing)
   trialActive: boolean;
   currentPeriodEnd: string | null;
+  planTier: string; // basico | pro
 };
 
 /**
@@ -25,6 +26,7 @@ export function getAccessInfo(user: User): AccessInfo {
     status,
     trialEndsAt: trialActive ? periodEnd : null,
     trialActive,
+    planTier: user.planTier,
     currentPeriodEnd: periodEnd,
   };
 }

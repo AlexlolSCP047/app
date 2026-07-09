@@ -211,9 +211,17 @@ export async function exerciseSubstitute(exercise: string, reason?: string) {
   });
 }
 
-/** Abre el pago: el backend crea la sesión de Stripe y devuelve su URL. */
-export async function createCheckout() {
-  return request<{ url: string }>("/api/checkout", { method: "POST" });
+/** Abre el pago del plan elegido: el backend crea la sesión de Stripe y devuelve su URL. */
+export async function createCheckout(plan: "basico" | "pro" = "pro") {
+  return request<{ url: string }>("/api/checkout", {
+    method: "POST",
+    body: JSON.stringify({ plan }),
+  });
+}
+
+/** Mejora la suscripción Básico → Pro (prorrateado, sin volver a pasar por caja). */
+export async function upgradePlan() {
+  return request<{ ok: boolean; message: string }>("/api/billing/upgrade", { method: "POST" });
 }
 
 /** Portal de facturación de Stripe (gestionar o cancelar la suscripción). */

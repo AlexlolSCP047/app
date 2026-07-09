@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
-export default function RegistroPage() {
+function RegistroForm() {
   const router = useRouter();
+  const plan = useSearchParams().get("plan") === "basico" ? "basico" : "pro";
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,11 @@ export default function RegistroPage() {
       }
       // Cuenta creada: se abre Stripe para registrar la tarjeta y activar
       // el día de prueba (sin cobro hasta el segundo día).
-      const checkout = await fetch("/api/checkout", { method: "POST" });
+      const checkout = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
       const checkoutData = await checkout.json().catch(() => ({}));
       if (checkout.ok && checkoutData.url) {
         window.location.href = checkoutData.url;
@@ -46,6 +51,9 @@ export default function RegistroPage() {
     <main className="flex min-h-screen items-center justify-center px-6">
       <div className="card w-full max-w-md">
         <h1 className="text-2xl font-bold">Crea tu cuenta</h1>
+        <p className="mt-1 text-xs text-brand-400">
+          Plan elegido: {plan === "basico" ? "Básico — 9,99 €/mes" : "Pro — 14,99 €/mes"}
+        </p>
         <p className="mt-1 text-sm text-zinc-400">
           1 día de prueba gratis. Te pediremos la tarjeta: no se cobra nada hasta el segundo día
           y puedes cancelar antes sin coste.
@@ -116,5 +124,13 @@ export default function RegistroPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function RegistroPage() {
+  return (
+    <Suspense>
+      <RegistroForm />
+    </Suspense>
   );
 }
