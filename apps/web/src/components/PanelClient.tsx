@@ -271,10 +271,14 @@ export default function PanelClient(props: {
     }
   }
 
-  async function goToCheckout() {
+  async function goToCheckout(plan: "basico" | "pro") {
     setBusy("checkout");
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
       const data = await res.json().catch(() => ({}));
       if (data.url) window.location.href = data.url;
       else setNotice(data.error ?? "No se pudo abrir el pago. Inténtalo de nuevo en unos minutos.");
@@ -319,7 +323,10 @@ export default function PanelClient(props: {
       {/* Estado de la suscripción */}
       {props.access.status === "active" ? (
         <div className="mb-6 flex items-center justify-between rounded-xl border border-brand-800 bg-brand-950/60 px-4 py-3 text-sm">
-          <span className="text-brand-300">✓ Suscripción activa — Plan Pro (14,99 €/mes)</span>
+          <span className="text-brand-300">
+            ✓ Suscripción activa —{" "}
+            {props.access.planTier === "basico" ? "Plan Básico (9,99 €/mes)" : "Plan Pro (14,99 €/mes)"}
+          </span>
           <button onClick={openPortal} className="text-brand-400 hover:underline">
             Gestionar suscripción
           </button>
@@ -327,7 +334,8 @@ export default function PanelClient(props: {
       ) : props.access.trialActive ? (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-800 bg-brand-950/40 px-4 py-3 text-sm">
           <span className="text-brand-300">
-            🎁 Prueba gratuita: te {trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}. Después, 14,99 €/mes.
+            🎁 Prueba gratuita: te {trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}. Después,{" "}
+            {props.access.planTier === "basico" ? "9,99" : "14,99"} €/mes.
           </span>
           <button onClick={openPortal} className="text-brand-400 hover:underline">
             Gestionar o cancelar
@@ -342,10 +350,27 @@ export default function PanelClient(props: {
         </div>
       ) : (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm">
-          <span className="text-amber-300">Activa tu día de prueba gratis — sin cobro hasta mañana.</span>
-          <button onClick={goToCheckout} className="btn-primary" disabled={busy === "checkout"}>
-            {busy === "checkout" ? "Abriendo…" : "Empezar mi prueba gratis"}
-          </button>
+          <span className="text-amber-300">
+            {props.access.status === "canceled"
+              ? "Reactiva tu suscripción y sigue entrenando."
+              : "Activa tu día de prueba gratis — sin cobro hasta mañana."}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => goToCheckout("basico")}
+              className="btn-secondary"
+              disabled={busy === "checkout"}
+            >
+              Básico — 9,99 €/mes
+            </button>
+            <button
+              onClick={() => goToCheckout("pro")}
+              className="btn-primary"
+              disabled={busy === "checkout"}
+            >
+              {busy === "checkout" ? "Abriendo…" : "Pro — 14,99 €/mes (con dieta)"}
+            </button>
+          </div>
         </div>
       )}
 

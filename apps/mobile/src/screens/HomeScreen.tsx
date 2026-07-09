@@ -164,12 +164,14 @@ export default function HomeScreen({ navigation }: Props) {
       {/* Estado de la suscripción (sin enlaces de gestión: eso vive discreto abajo) */}
       {access?.status === "active" ? (
         <View style={[styles.banner, { borderColor: colors.primaryDark }]}>
-          <Text style={{ color: colors.primary }}>✓ Suscripción activa — Plan Pro</Text>
+          <Text style={{ color: colors.primary }}>
+            ✓ Suscripción activa — {access.planTier === "basico" ? "Plan Básico (9,99 €/mes)" : "Plan Pro (14,99 €/mes)"}
+          </Text>
         </View>
       ) : access?.trialActive ? (
         <View style={[styles.banner, { borderColor: colors.primaryDark }]}>
           <Text style={{ color: colors.primary }}>
-            🎁 Prueba gratuita activa{trialDaysLeft > 0 ? ` — te ${trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}` : ""}. Después, 14,99 €/mes automáticamente.
+            🎁 Prueba gratuita activa{trialDaysLeft > 0 ? ` — te ${trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}` : ""}. Después, {access.planTier === "basico" ? "9,99" : "14,99"} €/mes automáticamente.
           </Text>
         </View>
       ) : access?.status === "past_due" ? (
@@ -182,11 +184,11 @@ export default function HomeScreen({ navigation }: Props) {
       ) : (
         <View style={[styles.banner, { borderColor: colors.primary }]}>
           <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
-            {access?.status === "canceled" ? "Reactiva tu Plan Pro 💪" : "Activa tu día de prueba gratis 🎁"}
+            {access?.status === "canceled" ? "Reactiva tu suscripción 💪" : "Activa tu día de prueba gratis 🎁"}
           </Text>
           <Text style={{ color: colors.muted, fontSize: 13 }}>
             {access?.status === "canceled"
-              ? "Recupera tu plan adaptativo, el modo entrenamiento y el chat por 14,99 €/mes."
+              ? "Recupera tu plan adaptativo, el modo entrenamiento y el chat desde 9,99 €/mes."
               : "Sin cobro hasta mañana. Se abrirá el pago seguro de Stripe en tu navegador."}
           </Text>
           <TouchableOpacity style={styles.subscribeBtn} onPress={() => openCheckout("pro")} disabled={paying}>

@@ -44,6 +44,7 @@ export type Access = {
   status: string; // none | trialing | active | past_due | canceled
   trialEndsAt: string | null;
   trialActive: boolean;
+  planTier?: string; // basico | pro
 };
 
 export type Profile = {
