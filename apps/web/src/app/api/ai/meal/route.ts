@@ -38,6 +38,13 @@ export async function POST(req: Request) {
   const meal = typeof body?.meal === "string" ? body.meal.trim() : "";
   if (!meal) return NextResponse.json({ error: "Describe qué has comido." }, { status: 400 });
 
+  if (user.planTier !== "pro") {
+    return NextResponse.json(
+      { error: "La dieta y el análisis de comidas son del plan Pro (14,99 €/mes). Mejora tu plan para usarlos.", code: "PLAN_BASIC" },
+      { status: 402 },
+    );
+  }
+
   const profile = await prisma.trainingProfile.findUnique({ where: { userId: user.id } });
   try {
     const data = await generateStructured(

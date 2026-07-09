@@ -1569,6 +1569,24 @@ function DietTab() {
   const [analysis, setAnalysis] = useState<MealAnalysis | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsPro, setNeedsPro] = useState(false);
+
+  async function upgrade() {
+    setBusy("upgrade");
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/upgrade", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo mejorar el plan.");
+        return;
+      }
+      setNeedsPro(false);
+      setError(null);
+    } finally {
+      setBusy(null);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/ai/diet").then((r) => (r.ok ? r.json() : null)).then((d) => d?.diet && setDiet(d.diet.data)).catch(() => {});
@@ -1581,7 +1599,8 @@ function DietTab() {
       const res = await fetch("/api/ai/diet", { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "No se pudo generar la dieta.");
+        if (data.code === "PLAN_BASIC") setNeedsPro(true);
+        else setError(data.error ?? "No se pudo generar la dieta.");
         return;
       }
       setDiet(data.diet.data);
@@ -1604,13 +1623,50 @@ function DietTab() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "No se pudo analizar la comida.");
+        if (data.code === "PLAN_BASIC") setNeedsPro(true);
+        else setError(data.error ?? "No se pudo analizar la comida.");
         return;
       }
       setAnalysis(data.analysis);
     } finally {
       setBusy(null);
     }
+  }
+
+  if (needsPro) {
+    return (
+      <section className="card mx-auto max-w-lg text-center">
+        <p className="text-4xl">⭐</p>
+        <h2 className="mt-3 text-xl font-bold">Dieta y análisis de comidas — plan Pro</h2>
+        <p className="mt-2 text-sm text-zinc-400">
+          Tu plan Básico incluye todo el entrenamiento. Pásate al Pro por 14,99 €/mes y añade tu
+          dieta personalizada con macros y el análisis de comidas con IA. El cambio se prorratea:
+          solo pagas la diferencia.
+        </p>
+        <button onClick={upgrade} className="btn-primary mt-6 w-full py-3" disabled={busy === "upgrade"}>
+          {busy === "upgrade" ? "Mejorando tu plan…" : "⭐ Pasar al plan Pro (14,99 €/mes)"}
+        </button>
+        {error && <p className="mt-3 text-sm text-amber-300">{error}</p>}
+      </section>
+    );
+  }
+
+  if (needsPro) {
+    return (
+      <section className="card mx-auto max-w-lg text-center">
+        <p className="text-4xl">⭐</p>
+        <h2 className="mt-3 text-xl font-bold">Dieta y análisis de comidas — plan Pro</h2>
+        <p className="mt-2 text-sm text-zinc-400">
+          Tu plan Básico incluye todo el entrenamiento. Pásate al Pro por 14,99 €/mes y añade tu
+          dieta personalizada con macros y el análisis de comidas con IA. El cambio se prorratea:
+          solo pagas la diferencia.
+        </p>
+        <button onClick={upgrade} className="btn-primary mt-6 w-full py-3" disabled={busy === "upgrade"}>
+          {busy === "upgrade" ? "Mejorando tu plan…" : "⭐ Pasar al plan Pro (14,99 €/mes)"}
+        </button>
+        {error && <p className="mt-3 text-sm text-amber-300">{error}</p>}
+      </section>
+    );
   }
 
   return (

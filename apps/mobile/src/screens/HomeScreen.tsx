@@ -107,11 +107,11 @@ export default function HomeScreen({ navigation }: Props) {
     setRefreshing(false);
   }
 
-  async function openCheckout() {
+  async function openCheckout(plan: "basico" | "pro") {
     setPaying(true);
     setError(null);
     try {
-      const data = await createCheckout();
+      const data = await createCheckout(plan);
       if (data.url) await Linking.openURL(data.url);
     } catch (e) {
       setError(e instanceof Error ? e.message : "No se pudo abrir el pago.");
@@ -189,14 +189,19 @@ export default function HomeScreen({ navigation }: Props) {
               ? "Recupera tu plan adaptativo, el modo entrenamiento y el chat por 14,99 €/mes."
               : "Sin cobro hasta mañana. Se abrirá el pago seguro de Stripe en tu navegador."}
           </Text>
-          <TouchableOpacity style={styles.subscribeBtn} onPress={openCheckout} disabled={paying}>
+          <TouchableOpacity style={styles.subscribeBtn} onPress={() => openCheckout("pro")} disabled={paying}>
             {paying ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.subscribeBtnText}>
-                {access?.status === "canceled" ? "💳 Suscribirme — 14,99 €/mes" : "💳 Empezar mi prueba gratis"}
-              </Text>
+              <Text style={styles.subscribeBtnText}>💳 Plan Pro — 14,99 €/mes (con dieta)</Text>
             )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.subscribeBtn, { backgroundColor: "transparent", borderColor: colors.border, borderWidth: 1 }]}
+            onPress={() => openCheckout("basico")}
+            disabled={paying}
+          >
+            <Text style={[styles.subscribeBtnText, { color: colors.text }]}>Plan Básico — 9,99 €/mes (solo entrenamiento)</Text>
           </TouchableOpacity>
         </View>
       )}

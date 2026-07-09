@@ -25,6 +25,7 @@ model User {
   stripeCustomerId   String?   @unique
   subscriptionId     String?
   subscriptionStatus String    @default("none") // none | trialing | active | past_due | canceled
+  planTier           String    @default("pro") // basico (solo entrenamiento) | pro (+ dieta)
   currentPeriodEnd   DateTime?
 
   profile      TrainingProfile?

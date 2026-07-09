@@ -56,6 +56,13 @@ export async function POST() {
     return NextResponse.json({ error, code: "PAYWALL" }, { status: 402 });
   }
 
+  if (user.planTier !== "pro") {
+    return NextResponse.json(
+      { error: "La dieta y el análisis de comidas son del plan Pro (14,99 €/mes). Mejora tu plan para usarlos.", code: "PLAN_BASIC" },
+      { status: 402 },
+    );
+  }
+
   const profile = await prisma.trainingProfile.findUnique({ where: { userId: user.id } });
   if (!profile) {
     return NextResponse.json({ error: "Completa primero tu perfil de entrenamiento.", code: "NO_PROFILE" }, { status: 400 });

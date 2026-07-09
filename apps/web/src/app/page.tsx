@@ -100,32 +100,43 @@ export default function LandingPage() {
 
       {/* Precios */}
       <section className="mx-auto max-w-6xl px-6 pb-24">
-        <h2 className="mb-10 text-center text-3xl font-bold">Un precio simple</h2>
-        <div className="mx-auto max-w-md">
-          <div className="card border-brand-700 text-center">
-            <p className="text-sm font-medium uppercase tracking-wide text-brand-400">Plan Pro</p>
-            <p className="mt-4 text-5xl font-extrabold">
-              14,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
-            </p>
-            <p className="mt-2 text-sm text-zinc-400">
-              o el equivalente en tu moneda local, calculado al pagar
+        <h2 className="mb-10 text-center text-3xl font-bold">Elige tu plan</h2>
+        <div className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2">
+          <div className="card text-center">
+            <p className="text-sm font-medium uppercase tracking-wide text-zinc-400">Básico</p>
+            <p className="mt-4 text-4xl font-extrabold">
+              9,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
             </p>
             <ul className="mt-6 space-y-2 text-left text-sm text-zinc-300">
-              <li>✓ 1 día de prueba totalmente gratis</li>
-              <li>✓ No se cobra nada hasta el segundo día</li>
-              <li>✓ Planes semanales que se adaptan a tu feedback</li>
-              <li>✓ Clases guiadas para entrenar en casa</li>
-              <li>✓ Dieta personalizada y análisis de comidas con IA</li>
-              <li>✓ Biblioteca de ejercicios y gráficas de progreso</li>
-              <li>✓ Chat ilimitado con tu entrenador IA</li>
-              <li>✓ App para Android e iOS incluida</li>
-              <li>✓ Cancela cuando quieras desde tu panel</li>
+              <li>✓ 1 día de prueba gratis</li>
+              <li>✓ Plan de entrenamiento con IA adaptativo</li>
+              <li>✓ Modo entrenamiento guiado y clases en casa</li>
+              <li>✓ Biblioteca de ejercicios y progreso</li>
+              <li>✓ Chat con tu entrenador IA</li>
             </ul>
-            <Link href="/registro" className="btn-primary mt-8 w-full py-3">
-              Probar 1 día gratis
+            <Link href="/registro?plan=basico" className="btn-secondary mt-8 w-full py-3">
+              Empezar con Básico
+            </Link>
+          </div>
+          <div className="card border-brand-700 text-center">
+            <p className="text-sm font-medium uppercase tracking-wide text-brand-400">Pro · el más completo</p>
+            <p className="mt-4 text-4xl font-extrabold">
+              14,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
+            </p>
+            <ul className="mt-6 space-y-2 text-left text-sm text-zinc-300">
+              <li>✓ Todo lo del plan Básico</li>
+              <li>✓ 🍽️ Dieta personalizada con macros</li>
+              <li>✓ 🔍 Análisis de comidas con IA</li>
+              <li>✓ Entrenamiento y alimentación coordinados</li>
+            </ul>
+            <Link href="/registro?plan=pro" className="btn-primary mt-8 w-full py-3">
+              Empezar con Pro
             </Link>
           </div>
         </div>
+        <p className="mt-6 text-center text-xs text-zinc-500">
+          Sin permanencia · precio en tu moneda local al pagar · cambia de plan cuando quieras
+        </p>
       </section>
 
       <footer className="space-y-2 border-t border-zinc-900 py-8 text-center text-xs text-zinc-500">
