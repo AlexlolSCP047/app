@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import type { RootStackParamList } from "../../App";
 import {
+  API_URL,
   Access,
   Plan,
   WorkoutLog,
@@ -160,22 +161,16 @@ export default function HomeScreen({ navigation }: Props) {
     >
       <Text style={styles.greeting}>Hola, {name} 👋</Text>
 
-      {/* Estado de la suscripción */}
+      {/* Estado de la suscripción (sin enlaces de gestión: eso vive discreto abajo) */}
       {access?.status === "active" ? (
         <View style={[styles.banner, { borderColor: colors.primaryDark }]}>
           <Text style={{ color: colors.primary }}>✓ Suscripción activa — Plan Pro</Text>
-          <TouchableOpacity onPress={openPortal}>
-            <Text style={styles.bannerLink}>Gestionar suscripción</Text>
-          </TouchableOpacity>
         </View>
       ) : access?.trialActive ? (
         <View style={[styles.banner, { borderColor: colors.primaryDark }]}>
           <Text style={{ color: colors.primary }}>
-            🎁 Prueba gratuita activa{trialDaysLeft > 0 ? ` — te ${trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}` : ""}. Después, 9,99 €/mes.
+            🎁 Prueba gratuita activa{trialDaysLeft > 0 ? ` — te ${trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}` : ""}. Después, 9,99 €/mes automáticamente.
           </Text>
-          <TouchableOpacity onPress={openPortal}>
-            <Text style={styles.bannerLink}>Gestionar o cancelar</Text>
-          </TouchableOpacity>
         </View>
       ) : access?.status === "past_due" ? (
         <View style={[styles.banner, { borderColor: colors.warning }]}>
@@ -185,15 +180,22 @@ export default function HomeScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={[styles.banner, { borderColor: colors.warning }]}>
-          <Text style={{ color: colors.warning }}>
-            Activa tu día de prueba gratis — sin cobro hasta mañana, cancela cuando quieras.
+        <View style={[styles.banner, { borderColor: colors.primary }]}>
+          <Text style={{ color: colors.text, fontWeight: "700", fontSize: 15 }}>
+            {access?.status === "canceled" ? "Reactiva tu Plan Pro 💪" : "Activa tu día de prueba gratis 🎁"}
+          </Text>
+          <Text style={{ color: colors.muted, fontSize: 13 }}>
+            {access?.status === "canceled"
+              ? "Recupera tu plan adaptativo, el modo entrenamiento y el chat por 9,99 €/mes."
+              : "Sin cobro hasta mañana. Se abrirá el pago seguro de Stripe en tu navegador."}
           </Text>
           <TouchableOpacity style={styles.subscribeBtn} onPress={openCheckout} disabled={paying}>
             {paying ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.subscribeBtnText}>Empezar mi prueba gratis</Text>
+              <Text style={styles.subscribeBtnText}>
+                {access?.status === "canceled" ? "💳 Suscribirme — 9,99 €/mes" : "💳 Empezar mi prueba gratis"}
+              </Text>
             )}
           </TouchableOpacity>
         </View>
@@ -295,6 +297,17 @@ export default function HomeScreen({ navigation }: Props) {
       <TouchableOpacity style={styles.logout} onPress={onLogout}>
         <Text style={{ color: colors.muted }}>Cerrar sesión</Text>
       </TouchableOpacity>
+
+      {/* Enlaces legales, discretos a propósito (abren la web) */}
+      <View style={styles.legalRow}>
+        <TouchableOpacity onPress={() => Linking.openURL(`${API_URL}/privacidad`)}>
+          <Text style={styles.legalLink}>Política de privacidad</Text>
+        </TouchableOpacity>
+        <Text style={styles.legalDot}>·</Text>
+        <TouchableOpacity onPress={() => Linking.openURL(`${API_URL}/eliminar-cuenta`)}>
+          <Text style={styles.legalLink}>Eliminar cuenta</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -355,5 +368,14 @@ const styles = StyleSheet.create({
   },
   menuTitle: { color: colors.text, fontSize: 15, fontWeight: "700" },
   menuText: { color: colors.muted, marginTop: 3, fontSize: 12 },
-  logout: { alignItems: "center", marginTop: 20, padding: 12, marginBottom: 20 },
+  logout: { alignItems: "center", marginTop: 20, padding: 12 },
+  legalRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 24,
+    opacity: 0.6,
+  },
+  legalLink: { color: colors.muted, fontSize: 11, textDecorationLine: "underline" },
+  legalDot: { color: colors.muted, fontSize: 11 },
 });

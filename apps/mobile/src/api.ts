@@ -137,6 +137,14 @@ export async function logout() {
   await setToken(null);
 }
 
+/** Envía el correo de "olvidé mi contraseña" (el enlace abre la web). */
+export async function forgotPassword(email: string) {
+  return request<{ message: string }>("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
 export async function me() {
   return request<{ user: { name: string; email: string }; access: Access; profile: Profile | null }>(
     "/api/me",
