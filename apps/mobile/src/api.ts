@@ -221,6 +221,38 @@ export async function billingPortal() {
   return request<{ url: string }>("/api/billing/portal", { method: "POST" });
 }
 
+export type DietData = {
+  objetivoCalorias: number;
+  resumen: string;
+  comidas: { nombre: string; hora: string; descripcion: string; kcal: number; proteinasG: number; carbohidratosG: number; grasasG: number }[];
+  consejos: string[];
+};
+
+export type MealAnalysis = {
+  alimentos: string[];
+  kcal: number;
+  proteinasG: number;
+  carbohidratosG: number;
+  grasasG: number;
+  valoracion: string;
+  sugerencia: string;
+};
+
+export async function getDiet() {
+  return request<{ diet: { data: DietData } | null }>("/api/ai/diet");
+}
+
+export async function generateDiet() {
+  return request<{ diet: { data: DietData } }>("/api/ai/diet", { method: "POST" });
+}
+
+export async function analyzeMeal(meal: string) {
+  return request<{ analysis: MealAnalysis }>("/api/ai/meal", {
+    method: "POST",
+    body: JSON.stringify({ meal }),
+  });
+}
+
 export async function getChat() {
   return request<{ messages: ChatMsg[] }>("/api/ai/chat");
 }

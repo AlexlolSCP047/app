@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AccessInfo } from "@/lib/access";
+import { GUIDED_CLASSES, GuidedClass, exerciseVideoUrl } from "@/lib/classes";
 
 // ---------- Tipos ----------
 
@@ -79,6 +80,8 @@ const TABS = [
   ["hoy", "🔥 Hoy"],
   ["plan", "📅 Mi plan"],
   ["ejercicios", "📖 Ejercicios"],
+  ["clases", "🎥 Clases"],
+  ["dieta", "🍽️ Dieta"],
   ["progreso", "📈 Progreso"],
   ["chat", "💬 Chat"],
   ["perfil", "⚙️ Perfil"],
@@ -114,6 +117,7 @@ export default function PanelClient(props: {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [session, setSession] = useState<Plan["dias"][number] | null>(null);
+  const [classSession, setClassSession] = useState<GuidedClass | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -315,7 +319,7 @@ export default function PanelClient(props: {
       {/* Estado de la suscripción */}
       {props.access.status === "active" ? (
         <div className="mb-6 flex items-center justify-between rounded-xl border border-brand-800 bg-brand-950/60 px-4 py-3 text-sm">
-          <span className="text-brand-300">✓ Suscripción activa — Plan Pro (9,99 €/mes)</span>
+          <span className="text-brand-300">✓ Suscripción activa — Plan Pro (14,99 €/mes)</span>
           <button onClick={openPortal} className="text-brand-400 hover:underline">
             Gestionar suscripción
           </button>
@@ -323,7 +327,7 @@ export default function PanelClient(props: {
       ) : props.access.trialActive ? (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-800 bg-brand-950/40 px-4 py-3 text-sm">
           <span className="text-brand-300">
-            🎁 Prueba gratuita: te {trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}. Después, 9,99 €/mes.
+            🎁 Prueba gratuita: te {trialDaysLeft === 1 ? "queda 1 día" : `quedan ${trialDaysLeft} días`}. Después, 14,99 €/mes.
           </span>
           <button onClick={openPortal} className="text-brand-400 hover:underline">
             Gestionar o cancelar
@@ -390,6 +394,10 @@ export default function PanelClient(props: {
 
       {tab === "ejercicios" && <LibraryTab plan={plan} />}
 
+      {tab === "clases" && <ClassesTab onStart={setClassSession} />}
+
+      {tab === "dieta" && <DietTab />}
+
       {tab === "progreso" && (
         <ProgressTab progress={progress} workouts={workouts} onAdd={(e) => setProgress((p) => [...p, e])} setNotice={setNotice} />
       )}
@@ -434,6 +442,19 @@ export default function PanelClient(props: {
 
       {tab === "perfil" && (
         <ProfileTab profile={profile} setProfile={setProfile} busy={busy} onSave={saveProfile} isNew={!hasProfile} />
+      )}
+
+      {/* Clase guiada por tiempo, a pantalla completa */}
+      {classSession && (
+        <ClassPlayer
+          clase={classSession}
+          onClose={() => setClassSession(null)}
+          onFinish={async (difficulty) => {
+            await completeWorkout(`Clase: ${classSession.nombre}`, classSession.nombre, difficulty);
+            setClassSession(null);
+            setTab("hoy");
+          }}
+        />
       )}
 
       {/* Modo entrenamiento: sesión guiada a pantalla completa */}
@@ -768,6 +789,9 @@ function ExerciseRow(props: { ej: Exercise; open: boolean; onToggle: () => void 
                     ))}
                   </ul>
                   <p className="mt-2 text-zinc-300">💡 {detail.consejo}</p>
+                  <a href={exerciseVideoUrl(props.ej.nombre)} target="_blank" rel="noreferrer" className="mt-2 inline-block text-brand-400 hover:underline">
+                    🎬 Ver vídeo del ejercicio
+                  </a>
                 </div>
               </div>
             )}
@@ -882,6 +906,9 @@ function LibraryTab(props: { plan: Plan | null }) {
                 ))}
               </ul>
               <p className="mt-4 rounded-lg border border-brand-900 bg-brand-950/50 p-3 text-zinc-200">💡 {detail.consejo}</p>
+              <a href={exerciseVideoUrl(detail.nombre)} target="_blank" rel="noreferrer" className="btn-secondary mt-4 inline-flex">
+                🎬 Ver vídeo del ejercicio
+              </a>
             </div>
           </div>
         </div>
@@ -1321,6 +1348,9 @@ function WorkoutPlayer(props: {
               <span className="chip cursor-default">⏱️ {ej.descansoSegundos} s de descanso</span>
             </div>
             {ej.notas && <p className="mt-4 text-sm text-zinc-400">💡 {ej.notas}</p>}
+            <a href={exerciseVideoUrl(ej.nombre)} target="_blank" rel="noreferrer" className="mt-2 text-sm text-brand-400 hover:underline">
+              🎬 Ver vídeo de cómo se hace
+            </a>
 
             {/* Progreso de series */}
             <div className="mt-6 flex items-center gap-2">
@@ -1358,5 +1388,310 @@ function WorkoutPlayer(props: {
         )}
       </div>
     </div>
+  );
+}
+
+// ---------- Pestaña CLASES (sesiones guiadas por tiempo) ----------
+
+function ClassesTab(props: { onStart: (c: GuidedClass) => void }) {
+  return (
+    <section className="space-y-6">
+      <p className="text-sm text-zinc-400">
+        Clases guiadas para casa, sin material: dale a empezar y déjate llevar — cada ejercicio
+        con su cuenta atrás y sus descansos. Cuentan como sesión para tu racha 🔥.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {GUIDED_CLASSES.map((c) => (
+          <div key={c.id} className="card flex flex-col">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{c.emoji}</span>
+              <div>
+                <h3 className="font-semibold">{c.nombre}</h3>
+                <p className="text-xs text-zinc-500">
+                  {c.minutos} min · {c.nivel} · {c.ejercicios.length} ejercicios
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 flex-1 text-sm text-zinc-400">{c.descripcion}</p>
+            <button onClick={() => props.onStart(c)} className="btn-primary mt-4">
+              ▶ Empezar clase
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Reproductor de clase: cada ejercicio dura X segundos, con descansos entre medias. */
+function ClassPlayer(props: {
+  clase: GuidedClass;
+  onClose: () => void;
+  onFinish: (difficulty: string) => Promise<void>;
+}) {
+  const total = props.clase.ejercicios.length;
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState<"trabajo" | "descanso" | "fin">("trabajo");
+  const [left, setLeft] = useState(props.clase.ejercicios[0].segundos);
+  const [difficulty, setDifficulty] = useState("justo");
+  const [saving, setSaving] = useState(false);
+
+  const ej = props.clase.ejercicios[Math.min(idx, total - 1)];
+
+  useEffect(() => {
+    if (phase === "fin") return;
+    if (left > 0) {
+      const t = setTimeout(() => setLeft((s) => s - 1), 1000);
+      return () => clearTimeout(t);
+    }
+    // fase terminada → siguiente descanso / ejercicio / fin
+    if (phase === "trabajo") {
+      if (ej.descanso > 0 && idx + 1 < total) {
+        setPhase("descanso");
+        setLeft(ej.descanso);
+      } else if (idx + 1 < total) {
+        setIdx(idx + 1);
+        setLeft(props.clase.ejercicios[idx + 1].segundos);
+      } else {
+        setPhase("fin");
+      }
+    } else {
+      setIdx(idx + 1);
+      setPhase("trabajo");
+      setLeft(props.clase.ejercicios[idx + 1].segundos);
+    }
+  }, [left, phase, idx, ej.descanso, total, props.clase.ejercicios]);
+
+  async function finish() {
+    setSaving(true);
+    try {
+      await props.onFinish(difficulty);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const progressPct = Math.round(((phase === "fin" ? total : idx) / total) * 100);
+  const siguiente = idx + 1 < total ? props.clase.ejercicios[idx + 1].nombre : null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-zinc-950/95 backdrop-blur-sm">
+      <div className="mx-auto flex min-h-full w-full max-w-lg flex-col px-6 py-8">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-brand-400">Clase guiada</p>
+            <h2 className="font-bold">
+              {props.clase.emoji} {props.clase.nombre}
+            </h2>
+          </div>
+          <button onClick={props.onClose} className="btn-secondary px-3 py-1.5 text-xs">
+            ✕ Salir
+          </button>
+        </div>
+        <div className="meter mt-4">
+          <span style={{ width: `${progressPct}%` }} />
+        </div>
+        <p className="mt-1 text-right text-xs text-zinc-500">
+          {phase === "fin" ? total : idx} / {total} ejercicios
+        </p>
+
+        {phase === "fin" ? (
+          <div className="card mt-6 text-center">
+            <p className="text-4xl">🏆</p>
+            <p className="mt-2 text-lg font-bold">¡Clase completada!</p>
+            <p className="mt-1 text-sm text-zinc-400">¿Cómo te ha resultado?</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {[
+                ["facil", "😎 Fácil"],
+                ["justo", "💪 Justo"],
+                ["dificil", "🥵 Difícil"],
+              ].map(([k, label]) => (
+                <button key={k} onClick={() => setDifficulty(k)} className={`chip ${difficulty === k ? "chip-active" : ""}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button onClick={finish} className="btn-primary mt-6 w-full py-3" disabled={saving}>
+              {saving ? "Guardando…" : "Guardar sesión ✓"}
+            </button>
+            <button onClick={props.onClose} className="mt-3 text-xs text-zinc-500 hover:text-zinc-300">
+              Salir sin guardar
+            </button>
+          </div>
+        ) : (
+          <div className={`card mt-6 flex flex-1 flex-col items-center justify-center text-center ${phase === "trabajo" ? "border-brand-800" : ""}`}>
+            <p className="text-sm uppercase tracking-wide text-zinc-400">
+              {phase === "trabajo" ? "¡Dale!" : "Descanso"}
+            </p>
+            <p className={`mt-4 text-7xl font-extrabold tabular-nums ${phase === "trabajo" ? "text-brand-400" : "text-zinc-300"}`}>
+              {formatSeconds(left)}
+            </p>
+            <h3 className="mt-4 text-xl font-bold">
+              {phase === "trabajo" ? ej.nombre : `Siguiente: ${siguiente ?? "final"}`}
+            </h3>
+            {phase === "trabajo" && (
+              <a href={exerciseVideoUrl(ej.nombre)} target="_blank" rel="noreferrer" className="mt-2 text-sm text-brand-400 hover:underline">
+                🎬 Ver vídeo
+              </a>
+            )}
+            <button onClick={() => setLeft(0)} className="btn-secondary mt-6">
+              Saltar →
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Pestaña DIETA ----------
+
+type DietData = {
+  objetivoCalorias: number;
+  resumen: string;
+  comidas: { nombre: string; hora: string; descripcion: string; kcal: number; proteinasG: number; carbohidratosG: number; grasasG: number }[];
+  consejos: string[];
+};
+
+type MealAnalysis = {
+  alimentos: string[];
+  kcal: number;
+  proteinasG: number;
+  carbohidratosG: number;
+  grasasG: number;
+  valoracion: string;
+  sugerencia: string;
+};
+
+function DietTab() {
+  const [diet, setDiet] = useState<DietData | null>(null);
+  const [meal, setMeal] = useState("");
+  const [analysis, setAnalysis] = useState<MealAnalysis | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/ai/diet").then((r) => (r.ok ? r.json() : null)).then((d) => d?.diet && setDiet(d.diet.data)).catch(() => {});
+  }, []);
+
+  async function generate() {
+    setBusy("diet");
+    setError(null);
+    try {
+      const res = await fetch("/api/ai/diet", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo generar la dieta.");
+        return;
+      }
+      setDiet(data.diet.data);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function analyze(e: React.FormEvent) {
+    e.preventDefault();
+    if (!meal.trim()) return;
+    setBusy("meal");
+    setError(null);
+    setAnalysis(null);
+    try {
+      const res = await fetch("/api/ai/meal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meal }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo analizar la comida.");
+        return;
+      }
+      setAnalysis(data.analysis);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <section className="space-y-6">
+      {/* Analizador de comidas */}
+      <div className="card">
+        <h2 className="font-semibold text-brand-300">🔍 Análisis de comidas</h2>
+        <p className="mt-1 text-sm text-zinc-400">
+          Cuéntale a la IA qué has comido y te dirá calorías, macros y cómo mejorarlo.
+        </p>
+        <form onSubmit={analyze} className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <input
+            className="input flex-1"
+            value={meal}
+            onChange={(e) => setMeal(e.target.value)}
+            placeholder="Ej.: un plato de macarrones con tomate y atún, y un yogur"
+          />
+          <button className="btn-primary" disabled={busy === "meal" || !meal.trim()}>
+            {busy === "meal" ? "Analizando…" : "Analizar"}
+          </button>
+        </form>
+        {analysis && (
+          <div className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-sm">
+            <div className="flex flex-wrap gap-2">
+              <span className="chip cursor-default">🔥 {analysis.kcal} kcal</span>
+              <span className="chip cursor-default">🥩 {analysis.proteinasG} g prot</span>
+              <span className="chip cursor-default">🍞 {analysis.carbohidratosG} g carbs</span>
+              <span className="chip cursor-default">🥑 {analysis.grasasG} g grasas</span>
+            </div>
+            <p className="mt-3 text-zinc-300">{analysis.valoracion}</p>
+            <p className="mt-2 text-brand-300">💡 {analysis.sugerencia}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Plan de dieta */}
+      <div className="flex flex-wrap items-center gap-4">
+        <button onClick={generate} className="btn-primary" disabled={busy === "diet"}>
+          {busy === "diet" ? "La IA está diseñando tu dieta…" : diet ? "Regenerar mi dieta" : "🍽️ Generar mi dieta con IA"}
+        </button>
+        <p className="text-xs text-zinc-500">Basada en tu perfil y tu objetivo de entrenamiento.</p>
+      </div>
+      {error && <p className="text-sm text-amber-300">{error}</p>}
+
+      {diet && (
+        <div className="space-y-4">
+          <div className="card">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="font-semibold text-brand-300">Tu día de alimentación</h2>
+              <span className="chip cursor-default">🎯 {diet.objetivoCalorias} kcal/día</span>
+            </div>
+            <p className="mt-2 text-sm text-zinc-300">{diet.resumen}</p>
+          </div>
+          {diet.comidas.map((c, i) => (
+            <div key={i} className="card">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="font-semibold">
+                  {c.nombre} <span className="text-sm font-normal text-zinc-500">· {c.hora}</span>
+                </h3>
+                <span className="text-sm text-zinc-400">{c.kcal} kcal</span>
+              </div>
+              <p className="mt-2 text-sm text-zinc-300">{c.descripcion}</p>
+              <p className="mt-2 text-xs text-zinc-500">
+                🥩 {c.proteinasG} g · 🍞 {c.carbohidratosG} g · 🥑 {c.grasasG} g
+              </p>
+            </div>
+          ))}
+          <div className="card">
+            <h3 className="mb-2 font-semibold text-brand-300">Consejos</h3>
+            <ul className="list-inside list-disc space-y-1 text-sm text-zinc-300">
+              {diet.consejos.map((c, i) => (
+                <li key={i}>{c}</li>
+              ))}
+            </ul>
+          </div>
+          <p className="text-xs text-zinc-600">
+            ⚠️ Orientativo: no sustituye el consejo de un dietista-nutricionista, especialmente si
+            tienes alguna condición médica.
+          </p>
+        </div>
+      )}
+    </section>
   );
 }

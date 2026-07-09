@@ -22,6 +22,16 @@ const features = [
     text: "Técnica paso a paso, músculos implicados y errores comunes de cualquier ejercicio. ¿No puedes hacer uno? La IA te da un sustituto al instante.",
   },
   {
+    icon: "🎥",
+    title: "Clases guiadas en casa",
+    text: "Core, full body, HIIT, movilidad… sesiones cronometradas paso a paso, sin material. Dale a empezar y déjate llevar.",
+  },
+  {
+    icon: "🍽️",
+    title: "Dieta y análisis de comidas",
+    text: "La IA diseña tu día de alimentación con macros según tu objetivo, y analiza cualquier comida que le cuentes.",
+  },
+  {
     icon: "📈",
     title: "Progreso visible",
     text: "Registra tu peso y tus marcas para ver tu evolución en gráficas. Nada motiva más que ver la curva bajar (o la barra subir).",
@@ -95,7 +105,7 @@ export default function LandingPage() {
           <div className="card border-brand-700 text-center">
             <p className="text-sm font-medium uppercase tracking-wide text-brand-400">Plan Pro</p>
             <p className="mt-4 text-5xl font-extrabold">
-              9,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
+              14,99 € <span className="text-base font-medium text-zinc-400">/ mes</span>
             </p>
             <p className="mt-2 text-sm text-zinc-400">
               o el equivalente en tu moneda local, calculado al pagar
@@ -104,6 +114,8 @@ export default function LandingPage() {
               <li>✓ 1 día de prueba totalmente gratis</li>
               <li>✓ No se cobra nada hasta el segundo día</li>
               <li>✓ Planes semanales que se adaptan a tu feedback</li>
+              <li>✓ Clases guiadas para entrenar en casa</li>
+              <li>✓ Dieta personalizada y análisis de comidas con IA</li>
               <li>✓ Biblioteca de ejercicios y gráficas de progreso</li>
               <li>✓ Chat ilimitado con tu entrenador IA</li>
               <li>✓ App para Android e iOS incluida</li>

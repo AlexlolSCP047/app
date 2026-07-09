@@ -2,7 +2,9 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { RootStackParamList } from "../../App";
+import * as Linking from "expo-linking";
 import { logWorkout } from "../api";
+import { exerciseVideoUrl } from "../classes";
 import { colors } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Workout">;
@@ -135,6 +137,11 @@ export default function WorkoutScreen({ navigation, route }: Props) {
             <Text style={styles.tag}>⏱️ {ej.descansoSegundos} s descanso</Text>
           </View>
           {ej.notas ? <Text style={styles.notes}>💡 {ej.notas}</Text> : null}
+          <TouchableOpacity onPress={() => Linking.openURL(exerciseVideoUrl(ej.nombre))}>
+            <Text style={{ color: colors.primary, fontSize: 13, marginTop: 10, textDecorationLine: "underline" }}>
+              🎬 Ver vídeo de cómo se hace
+            </Text>
+          </TouchableOpacity>
 
           {/* Progreso de series */}
           <View style={styles.seriesRow}>

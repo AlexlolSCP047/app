@@ -4,7 +4,7 @@ import Stripe from "stripe";
 // pruebas; la variable de entorno STRIPE_PRICE_ID tiene prioridad si se define.
 // Las claves secretas (STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET) nunca van en
 // el código: se definen como variables de entorno en Vercel.
-const TEST_PRICE_ID = "price_1TqsX7Ixw4PibaK17HIK7Fhc"; // FitCoach IA — Plan Pro, 9,99 EUR/mes
+const TEST_PRICE_ID = "price_1TqrfeIxw4PibaK1F2Bt7nVq"; // FitCoach IA — Plan Pro, 14,99 EUR/mes
 
 /** Días de prueba gratuita con tarjeta (Stripe no cobra hasta que terminan). */
 export const TRIAL_DAYS = 1;
@@ -18,7 +18,7 @@ export function stripe(): Stripe {
   return client;
 }
 
-/** ID del precio de la suscripción mensual (9,99 €). */
+/** ID del precio de la suscripción mensual (14,99 €). */
 export function stripePriceId(): string {
   return process.env.STRIPE_PRICE_ID ?? TEST_PRICE_ID;
 }
