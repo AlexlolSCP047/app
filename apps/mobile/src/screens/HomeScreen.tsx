@@ -309,6 +309,11 @@ export default function HomeScreen({ navigation }: Props) {
         </Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.menuCard} onPress={() => navigation.navigate("Account")}>
+        <Text style={styles.menuTitle}>👤 Mi cuenta</Text>
+        <Text style={styles.menuText}>Tu plan, cambio de plan y datos de pago.</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logout} onPress={onLogout}>
         <Text style={{ color: colors.muted }}>Cerrar sesión</Text>
       </TouchableOpacity>

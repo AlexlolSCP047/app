@@ -2,7 +2,7 @@
   "expo": {
     "name": "FitCoach IA",
     "slug": "fitcoach-ia",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "orientation": "portrait",
     "scheme": "fitcoach",
     "userInterfaceStyle": "dark",
@@ -16,7 +16,7 @@
     },
     "android": {
       "package": "com.fitcoach.ia",
-      "versionCode": 7
+      "versionCode": 8
     },
     "icon": "./assets/icon.png"
   }
