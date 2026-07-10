@@ -44,6 +44,8 @@ export type Access = {
   status: string; // none | trialing | active | past_due | canceled
   trialEndsAt: string | null;
   trialActive: boolean;
+  currentPeriodEnd?: string | null;
+  planTier?: string; // basico | pro
 };
 
 export type Profile = {
@@ -222,6 +224,11 @@ export async function createCheckout(plan: "basico" | "pro" = "pro") {
 /** Mejora la suscripción Básico → Pro (prorrateado, sin volver a pasar por caja). */
 export async function upgradePlan() {
   return request<{ ok: boolean; message: string }>("/api/billing/upgrade", { method: "POST" });
+}
+
+/** Baja la suscripción Pro → Básico (el nuevo precio entra en el próximo ciclo). */
+export async function downgradePlan() {
+  return request<{ ok: boolean; message: string }>("/api/billing/downgrade", { method: "POST" });
 }
 
 /** Portal de facturación de Stripe (gestionar o cancelar la suscripción). */

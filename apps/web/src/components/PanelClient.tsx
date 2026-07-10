@@ -85,6 +85,7 @@ const TABS = [
   ["progreso", "📈 Progreso"],
   ["chat", "💬 Chat"],
   ["perfil", "⚙️ Perfil"],
+  ["cuenta", "👤 Cuenta"],
 ] as const;
 
 type TabKey = (typeof TABS)[number][0];
@@ -271,10 +272,14 @@ export default function PanelClient(props: {
     }
   }
 
-  async function goToCheckout() {
+  async function goToCheckout(plan: "basico" | "pro" = "pro") {
     setBusy("checkout");
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan }),
+      });
       const data = await res.json().catch(() => ({}));
       if (data.url) window.location.href = data.url;
       else setNotice(data.error ?? "No se pudo abrir el pago. Inténtalo de nuevo en unos minutos.");
@@ -343,7 +348,7 @@ export default function PanelClient(props: {
       ) : (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm">
           <span className="text-amber-300">Activa tu día de prueba gratis — sin cobro hasta mañana.</span>
-          <button onClick={goToCheckout} className="btn-primary" disabled={busy === "checkout"}>
+          <button onClick={() => goToCheckout()} className="btn-primary" disabled={busy === "checkout"}>
             {busy === "checkout" ? "Abriendo…" : "Empezar mi prueba gratis"}
           </button>
         </div>
@@ -442,6 +447,10 @@ export default function PanelClient(props: {
 
       {tab === "perfil" && (
         <ProfileTab profile={profile} setProfile={setProfile} busy={busy} onSave={saveProfile} isNew={!hasProfile} />
+      )}
+
+      {tab === "cuenta" && (
+        <AccountTab access={props.access} userName={props.userName} onPortal={openPortal} onCheckout={goToCheckout} setNotice={setNotice} />
       )}
 
       {/* Clase guiada por tiempo, a pantalla completa */}
@@ -1748,6 +1757,133 @@ function DietTab() {
           </p>
         </div>
       )}
+    </section>
+  );
+}
+
+
+// ---------- Pestaña CUENTA (plan, pagos y datos) ----------
+
+const PLAN_INFO = {
+  basico: { nombre: "Básico", precio: "9,99 €/mes", desc: "Entrenamiento completo con IA" },
+  pro: { nombre: "Pro", precio: "14,99 €/mes", desc: "Entrenamiento + dieta y análisis de comidas" },
+} as const;
+
+function AccountTab(props: {
+  access: AccessInfo;
+  userName: string;
+  onPortal: () => void;
+  onCheckout: (plan: "basico" | "pro") => void;
+  setNotice: (m: string | null) => void;
+}) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [confirmDown, setConfirmDown] = useState(false);
+  const [tier, setTier] = useState<"basico" | "pro">(props.access.planTier === "basico" ? "basico" : "pro");
+  const hasSub = props.access.status === "active" || props.access.status === "trialing" || props.access.status === "past_due";
+  const nextBilling = props.access.currentPeriodEnd
+    ? new Date(props.access.currentPeriodEnd).toLocaleDateString("es-ES", { day: "numeric", month: "long" })
+    : null;
+
+  async function changePlan(target: "basico" | "pro") {
+    const url = target === "pro" ? "/api/billing/upgrade" : "/api/billing/downgrade";
+    setBusy(target);
+    try {
+      const res = await fetch(url, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        props.setNotice(data.error ?? "No se pudo cambiar el plan.");
+        return;
+      }
+      setTier(target);
+      setConfirmDown(false);
+      props.setNotice(data.message ?? "Plan actualizado.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <section className="mx-auto max-w-2xl space-y-6">
+      {/* Plan actual */}
+      <div className="card border-brand-800">
+        <p className="text-xs uppercase tracking-wide text-brand-400">Tu plan</p>
+        {hasSub ? (
+          <>
+            <h2 className="mt-1 text-2xl font-extrabold">
+              {PLAN_INFO[tier].nombre} <span className="text-base font-medium text-zinc-400">· {PLAN_INFO[tier].precio}</span>
+            </h2>
+            <p className="mt-1 text-sm text-zinc-400">{PLAN_INFO[tier].desc}</p>
+            {nextBilling && (
+              <p className="mt-2 text-xs text-zinc-500">
+                {props.access.trialActive ? "Primer cobro" : "Próximo cobro"}: {nextBilling}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <h2 className="mt-1 text-xl font-bold">Sin suscripción activa</h2>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button onClick={() => props.onCheckout("pro")} className="btn-primary">💳 Pro — 14,99 €/mes</button>
+              <button onClick={() => props.onCheckout("basico")} className="btn-secondary">Básico — 9,99 €/mes</button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Cambio de plan */}
+      {hasSub && (
+        <div className="card">
+          <h3 className="font-semibold text-brand-300">Cambiar de plan</h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {(Object.keys(PLAN_INFO) as ("basico" | "pro")[]).map((k) => (
+              <div key={k} className={`rounded-xl border p-4 ${tier === k ? "border-brand-500 bg-brand-500/10" : "border-zinc-800"}`}>
+                <p className="font-bold">{PLAN_INFO[k].nombre} <span className="text-sm font-normal text-zinc-400">· {PLAN_INFO[k].precio}</span></p>
+                <p className="mt-1 text-xs text-zinc-400">{PLAN_INFO[k].desc}</p>
+                {tier === k ? (
+                  <p className="mt-3 text-xs font-semibold text-brand-400">✓ Tu plan actual</p>
+                ) : k === "pro" ? (
+                  <button onClick={() => changePlan("pro")} className="btn-primary mt-3 w-full py-2 text-sm" disabled={busy !== null}>
+                    {busy === "pro" ? "Cambiando…" : "⭐ Subir a Pro"}
+                  </button>
+                ) : confirmDown ? (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs text-amber-300">Perderás la dieta y el análisis de comidas. ¿Seguro?</p>
+                    <button onClick={() => changePlan("basico")} className="btn-secondary w-full py-2 text-sm" disabled={busy !== null}>
+                      {busy === "basico" ? "Cambiando…" : "Sí, bajar a Básico"}
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => setConfirmDown(true)} className="btn-secondary mt-3 w-full py-2 text-sm">
+                    Bajar a Básico
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-zinc-500">
+            La subida se aplica al momento (solo pagas la diferencia prorrateada); la bajada mantiene el precio actual hasta el próximo ciclo.
+          </p>
+        </div>
+      )}
+
+      {/* Pago y cuenta */}
+      {hasSub && (
+        <div className="card">
+          <h3 className="font-semibold text-brand-300">Datos de pago</h3>
+          <button onClick={props.onPortal} className="btn-secondary mt-3">💳 Cambiar tarjeta</button>
+        </div>
+      )}
+      <div className="card">
+        <h3 className="font-semibold text-brand-300">Cuenta</h3>
+        <p className="mt-2 text-sm text-zinc-300">Nombre: {props.userName}</p>
+        <p className="mt-3 text-xs text-zinc-500">
+          <a href="/olvide-contrasena" className="hover:text-zinc-300 hover:underline">Cambiar contraseña</a>
+          {" · "}
+          <a href="/privacidad" className="hover:text-zinc-300 hover:underline">Política de privacidad</a>
+          {" · "}
+          <a href="/eliminar-cuenta" className="hover:text-zinc-300 hover:underline">Eliminar cuenta</a>
+        </p>
+      </div>
     </section>
   );
 }

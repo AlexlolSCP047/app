@@ -18,6 +18,7 @@ import ClassesScreen from "./src/screens/ClassesScreen";
 import DietScreen from "./src/screens/DietScreen";
 import ChatScreen from "./src/screens/ChatScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
+import AccountScreen from "./src/screens/AccountScreen";
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -32,6 +33,7 @@ export type RootStackParamList = {
   Progress: undefined;
   Chat: undefined;
   Profile: undefined;
+  Account: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -86,6 +88,7 @@ export default function App() {
         <Stack.Screen name="Progress" component={ProgressScreen} options={{ title: "Mi progreso" }} />
         <Stack.Screen name="Chat" component={ChatScreen} options={{ title: "Chat con la IA" }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: "Mi perfil" }} />
+        <Stack.Screen name="Account" component={AccountScreen} options={{ title: "Mi cuenta" }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

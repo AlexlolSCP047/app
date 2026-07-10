@@ -1,15 +1,15 @@
 # Descargas
 
-## FitCoach IA — Android v1.6.0 (lista para Google Play)
+## FitCoach IA — Android v1.7.0 (lista para Google Play)
 
 | Archivo | Para qué sirve |
 |---|---|
-| `FitCoach-IA-v1.6.0-playstore.aab` (27 MB) | **Subir a Google Play Console** (Play solo acepta AAB) |
-| `FitCoach-IA-v1.6.0.apk` (62 MB) | Instalar directamente en un móvil para probar |
+| `FitCoach-IA-v1.7.0-playstore.aab` (27 MB) | **Subir a Google Play Console** (Play solo acepta AAB) |
+| `FitCoach-IA-v1.7.0.apk` (62 MB) | Instalar directamente en un móvil para probar |
 
 - **Novedades:** clases guiadas cronometradas (core, HIIT, movilidad…), dieta con
   macros y análisis de comidas con IA, vídeos de cada ejercicio y precio 14,99 €
-- **Versión:** 1.6.0 (versionCode 7) · **Target API:** 35 (Android 15, requisito de Play)
+- **Versión:** 1.7.0 (versionCode 8) · **Target API:** 35 (Android 15, requisito de Play)
 - **Backend:** producción (`https://app-jbst.vercel.app`) — registro, plan, sesiones y chat funcionan
 - **Firma:** clave de subida `fitcoach-upload` (guardada fuera del repo; ver `apps/mobile/RELEASE.md`)
 
